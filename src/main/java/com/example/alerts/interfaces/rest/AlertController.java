@@ -36,9 +36,12 @@ public class AlertController {
     @GetMapping("/{id}")
     @Operation(summary = "Get alert by ID")
     public ResponseEntity<Alert> getAlertById(@PathVariable String id) {
-        return alertService.getAlertById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Optional<Alert> oAlert = alertService.getAlertById(id);
+        if (oAlert.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(oAlert.get());
     }
 
     @GetMapping("/patient/{patientId}")
@@ -79,4 +82,3 @@ public class AlertController {
     }
 
 }
-
