@@ -64,6 +64,10 @@ public class AlertMetaDataController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete alert metadata by ID")
     public ResponseEntity<Void> deleteAlertMetadata(@PathVariable Long id) {
+        Optional<AlertMetaData> oAlertMetaData = alertMetadataService.getAlertMetadataById(id);
+        if (oAlertMetaData.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         alertMetadataService.deleteAlertMetadata(id);
         return ResponseEntity.noContent().build();
     }
