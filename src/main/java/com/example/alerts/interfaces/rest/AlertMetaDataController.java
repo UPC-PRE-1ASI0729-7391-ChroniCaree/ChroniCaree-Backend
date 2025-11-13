@@ -33,9 +33,11 @@ public class AlertMetaDataController {
     @GetMapping("/{id}")
     @Operation(summary = "Get alert metadata by ID")
     public ResponseEntity<AlertMetaData> getAlertMetadataById(@PathVariable Long id) {
-        return alertMetadataService.getAlertMetadataById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Optional<AlertMetaData> oAlertMetaData = alertMetadataService.getAlertMetadataById(id);
+        if (oAlertMetaData.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(oAlertMetaData.get());
     }
 
     @GetMapping("/vital-sign/{vitalSign}")
