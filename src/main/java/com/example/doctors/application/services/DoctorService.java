@@ -2,51 +2,56 @@ package com.example.doctors.application.services;
 
 import com.example.doctors.domain.model.Doctor;
 import com.example.doctors.domain.repository.DoctorRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Servicio de aplicación para la gestión de médicos.
+ */
 @Service
+@Transactional
 public class DoctorService {
 
-    private final DoctorRepository repository;
+    private final DoctorRepository doctorRepository;
 
-    public DoctorService(DoctorRepository repository) {
-        this.repository = repository;
+    public DoctorService(DoctorRepository doctorRepository) {
+        this.doctorRepository = doctorRepository;
     }
 
-    public List<Doctor> getAll() {
-        return repository.findAll();
+    public List<Doctor> getAllDoctors() {
+        return doctorRepository.findAll();
     }
 
-    public Optional<Doctor> getById(Long id) {
-        return repository.findById(id);
+    public Optional<Doctor> getDoctorById(Long id) {
+        return doctorRepository.findById(id);
     }
 
-    public Doctor create(Doctor doctor) {
-        return repository.save(doctor);
+    public Doctor createDoctor(Doctor doctor) {
+        return doctorRepository.save(doctor);
     }
 
-    public Doctor update(Long id, Doctor doctorDetails) {
-        return repository.findById(id)
+    public Doctor updateDoctor(Long id, Doctor updatedDoctor) {
+        return doctorRepository.findById(id)
                 .map(existing -> {
-                    existing.setUser(doctorDetails.getUser());
-                    existing.setTenant(doctorDetails.getTenant());
-                    existing.setIndependent(doctorDetails.isIndependent());
-                    existing.setFirstName(doctorDetails.getFirstName());
-                    existing.setLastName(doctorDetails.getLastName());
-                    existing.setDni(doctorDetails.getDni());
-                    existing.setSpecialty(doctorDetails.getSpecialty());
-                    existing.setLicenseNumber(doctorDetails.getLicenseNumber());
-                    existing.setPhone(doctorDetails.getPhone());
-                    existing.setVerified(doctorDetails.isVerified());
-                    return repository.save(existing);
+                    existing.setUserId(updatedDoctor.getUserId());
+                    existing.setTenantId(updatedDoctor.getTenantId());
+                    existing.setIndependent(updatedDoctor.isIndependent());
+                    existing.setFirstName(updatedDoctor.getFirstName());
+                    existing.setLastName(updatedDoctor.getLastName());
+                    existing.setDni(updatedDoctor.getDni());
+                    existing.setSpecialty(updatedDoctor.getSpecialty());
+                    existing.setLicenseNumber(updatedDoctor.getLicenseNumber());
+                    existing.setPhone(updatedDoctor.getPhone());
+                    existing.setVerified(updatedDoctor.isVerified());
+                    return doctorRepository.save(existing);
                 })
-                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+                .orElseThrow(() -> new RuntimeException("Doctor not found with id: " + id));
     }
 
-    public void delete(Long id) {
-        repository.deleteById(id);
+    public void deleteDoctor(Long id) {
+        doctorRepository.deleteById(id);
     }
 }

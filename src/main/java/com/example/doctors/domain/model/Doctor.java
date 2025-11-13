@@ -1,50 +1,50 @@
 package com.example.doctors.domain.model;
 
-import com.example.tenants.domain.model.Tenant;
-import com.example.users.domain.model.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * Entidad que representa a un médico dentro del sistema.
+ */
 @Entity
 @Table(name = "doctors")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Doctor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(optional = false)
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
-    private User user;
+    @Column(nullable = false)
+    private Long userId;
 
-    @ManyToOne
-    @JoinColumn(name = "tenant_id")
-    private Tenant tenant;
+    @Column(nullable = true)
+    private Long tenantId;
 
-    @Column(name = "is_independent", nullable = false)
+    @Column(nullable = false)
     private boolean isIndependent;
 
-    @Column(name = "first_name", nullable = false)
+    @Column(nullable = false, length = 100)
     private String firstName;
 
-    @Column(name = "last_name", nullable = false)
+    @Column(nullable = false, length = 100)
     private String lastName;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 20)
     private String dni;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     private String specialty;
 
-    @Column(name = "license_number", nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 50)
     private String licenseNumber;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     private String phone;
 
-    @Column(name = "is_verified", nullable = false)
+    @Column(nullable = false)
     private boolean isVerified;
 }

@@ -4,52 +4,57 @@ import com.example.doctors.application.services.DoctorService;
 import com.example.doctors.domain.model.Doctor;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controlador REST para la gestión de médicos.
+ */
 @RestController
 @RequestMapping("/api/v1/doctors")
-@Tag(name = "Doctors", description = "Doctor management endpoints")
+@Tag(name = "Doctors", description = "Doctor management API")
 public class DoctorController {
 
-    private final DoctorService service;
+    private final DoctorService doctorService;
 
-    public DoctorController(DoctorService service) {
-        this.service = service;
+    public DoctorController(DoctorService doctorService) {
+        this.doctorService = doctorService;
     }
 
     @GetMapping
-    @Operation(summary = "Get all doctors")
-    public List<Doctor> getAll() {
-        return service.getAll();
+    @Operation(summary = "List all doctors")
+    public ResponseEntity<List<Doctor>> getAllDoctors() {
+        return ResponseEntity.ok(doctorService.getAllDoctors());
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get doctor by ID")
-    public ResponseEntity<Doctor> getById(@PathVariable Long id) {
-        return service.getById(id)
+    public ResponseEntity<Doctor> getDoctorById(@PathVariable Long id) {
+        return doctorService.getDoctorById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    @Operation(summary = "Create a new doctor")
-    public ResponseEntity<Doctor> create(@RequestBody Doctor doctor) {
-        return ResponseEntity.ok(service.create(doctor));
+    @Operation(summary = "Create new doctor")
+    public ResponseEntity<Doctor> createDoctor(@RequestBody Doctor doctor) {
+        Doctor created = doctorService.createDoctor(doctor);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update an existing doctor")
-    public ResponseEntity<Doctor> update(@PathVariable Long id, @RequestBody Doctor doctor) {
-        return ResponseEntity.ok(service.update(id, doctor));
+    @Operation(summary = "Update doctor by ID")
+    public ResponseEntity<Doctor> updateDoctor(@PathVariable Long id, @RequestBody Doctor doctor) {
+        return ResponseEntity.ok(doctorService.updateDoctor(id, doctor));
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete a doctor by ID")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        service.delete(id);
+    @Operation(summary = "Delete doctor by ID")
+    public ResponseEntity<Void> deleteDoctor(@PathVariable Long id) {
+        doctorService.deleteDoctor(id);
         return ResponseEntity.noContent().build();
     }
 }
