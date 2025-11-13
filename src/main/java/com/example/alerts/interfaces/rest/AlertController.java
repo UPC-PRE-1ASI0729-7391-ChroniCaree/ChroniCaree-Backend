@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/alerts")
@@ -55,6 +56,13 @@ public class AlertController {
     @PutMapping("/{id}")
     @Operation(summary = "Update alert by ID")
     public ResponseEntity<Alert> updateAlert(@PathVariable String id, @RequestBody Alert alert) {
+        
+        Optional<Alert> oAlert = alertService.getAlertById(id);
+        
+        if (oAlert.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+       
         return ResponseEntity.ok(alertService.updateAlert(id, alert));
     }
 

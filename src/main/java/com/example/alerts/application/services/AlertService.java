@@ -39,19 +39,8 @@ public class AlertService {
     }
 
     public Alert updateAlert(String id, Alert updatedAlert) {
-        return alertRepository.findById(id)
-                .map(existing -> {
-                    existing.setStatus(updatedAlert.getStatus());
-                    existing.setSeverity(updatedAlert.getSeverity());
-                    existing.setMessage(updatedAlert.getMessage());
-                    existing.setNotes(updatedAlert.getNotes());
-                    existing.setAcknowledgedBy(updatedAlert.getAcknowledgedBy());
-                    existing.setAcknowledgedAt(updatedAlert.getAcknowledgedAt());
-                    existing.setResolvedAt(updatedAlert.getResolvedAt());
-                    existing.setDismissedAt(updatedAlert.getDismissedAt());
-                    return alertRepository.save(existing);
-                })
-                .orElseThrow(() -> new RuntimeException("Alert not found with id: " + id));
+        updatedAlert.setId(id);
+        return alertRepository.save(updatedAlert);
     }
 
     public void deleteAlert(String id) {
