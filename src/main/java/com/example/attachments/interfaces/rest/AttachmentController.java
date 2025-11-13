@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/attachments")
@@ -49,6 +50,12 @@ public class AttachmentController {
     @PutMapping("/{id}")
     @Operation(summary = "Update attachment by ID")
     public ResponseEntity<Attachment> updateAttachment(@PathVariable String id, @RequestBody Attachment attachment) {
+        Optional<Attachment> oAttachment = attachmentService.getAttachmentById(id);
+
+        if (oAttachment.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
         return ResponseEntity.ok(attachmentService.updateAttachment(id, attachment));
     }
 

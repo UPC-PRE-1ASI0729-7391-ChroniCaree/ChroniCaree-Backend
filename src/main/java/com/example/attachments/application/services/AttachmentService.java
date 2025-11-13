@@ -35,15 +35,8 @@ public class AttachmentService {
     }
 
     public Attachment updateAttachment(String id, Attachment updatedAttachment) {
-        return attachmentRepository.findById(id)
-                .map(existing -> {
-                    existing.setFileName(updatedAttachment.getFileName());
-                    existing.setMimeType(updatedAttachment.getMimeType());
-                    existing.setUrl(updatedAttachment.getUrl());
-                    existing.setSizeBytes(updatedAttachment.getSizeBytes());
-                    return attachmentRepository.save(existing);
-                })
-                .orElseThrow(() -> new RuntimeException("Attachment not found with id: " + id));
+        updatedAttachment.setId(id);
+        return attachmentRepository.save(updatedAttachment);
     }
 
     public void deleteAttachment(String id) {
