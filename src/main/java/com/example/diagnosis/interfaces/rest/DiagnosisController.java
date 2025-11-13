@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/diagnoses")
@@ -32,7 +33,12 @@ public class DiagnosisController {
     @GetMapping("/{id}")
     @Operation(summary = "Get diagnosis by ID")
     public ResponseEntity<Diagnosis> getDiagnosisById(@PathVariable Long id) {
-        return ResponseEntity.ok(diagnosisService.getDiagnosisById(id));
+        Optional<Diagnosis> oDiagnosis = diagnosisService.getDiagnosisById(id);
+
+        if (oDiagnosis.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(oDiagnosis.get());
     }
 
     @GetMapping("/patient/{patientId}")
@@ -57,6 +63,12 @@ public class DiagnosisController {
     @PutMapping("/{id}")
     @Operation(summary = "Update diagnosis by ID")
     public ResponseEntity<Diagnosis> updateDiagnosis(@PathVariable Long id, @RequestBody Diagnosis diagnosis) {
+        Optional<Diagnosis> oDiagnosis = diagnosisService.getDiagnosisById(id);
+
+        if (oDiagnosis.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
         return ResponseEntity.ok(diagnosisService.updateDiagnosis(id, diagnosis));
     }
 

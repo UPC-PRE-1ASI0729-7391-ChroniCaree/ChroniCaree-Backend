@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -26,9 +27,9 @@ public class DiagnosisService {
         return diagnosisRepository.findAll();
     }
 
-    public Diagnosis getDiagnosisById(Long id) {
-        return diagnosisRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Diagnosis not found with id: " + id));
+    public Optional<Diagnosis> getDiagnosisById(Long id) {
+        return diagnosisRepository.findById(id);
+        //.orElseThrow(() -> new RuntimeException("Diagnosis not found with id: " + id));
     }
 
     public List<Diagnosis> getDiagnosesByPatient(Long patientId) {
@@ -48,19 +49,8 @@ public class DiagnosisService {
     }
 
     public Diagnosis updateDiagnosis(Long id, Diagnosis updated) {
-        return diagnosisRepository.findById(id)
-                .map(existing -> {
-                    existing.setDiagnosisName(updated.getDiagnosisName());
-                    existing.setSeverity(updated.getSeverity());
-                    existing.setStatus(updated.getStatus());
-                    existing.setTreatment(updated.getTreatment());
-                    existing.setNotes(updated.getNotes());
-                    existing.setResolvedDate(updated.getResolvedDate());
-                    existing.setLastReviewDate(updated.getLastReviewDate());
-                    existing.setFollowUpRequired(updated.isFollowUpRequired());
-                    return diagnosisRepository.save(existing);
-                })
-                .orElseThrow(() -> new RuntimeException("Diagnosis not found with id: " + id));
+        updated.setId(id);
+        return diagnosisRepository.save(updated);
     }
 
     public void deleteDiagnosis(Long id) {
