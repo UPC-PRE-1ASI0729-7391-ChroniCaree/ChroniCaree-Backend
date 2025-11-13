@@ -74,7 +74,12 @@ public class DiagnosisController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete diagnosis by ID")
-    public ResponseEntity<Void> deleteDiagnosis(@PathVariable Long id) {
+    public ResponseEntity<?> deleteDiagnosis(@PathVariable Long id) {
+        Optional<Diagnosis> oDiagnosis = diagnosisService.getDiagnosisById(id);
+
+        if (oDiagnosis.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         diagnosisService.deleteDiagnosis(id);
         return ResponseEntity.noContent().build();
     }
