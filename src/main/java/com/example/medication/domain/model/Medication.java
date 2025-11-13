@@ -19,6 +19,7 @@ import java.util.List;
 public class Medication {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
 
     @Column(nullable = false)
