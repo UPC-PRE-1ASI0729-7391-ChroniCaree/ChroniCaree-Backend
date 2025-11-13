@@ -38,20 +38,8 @@ public class AlertMetaDataService {
     }
 
     public AlertMetaData updateAlertMetadata(Long id, AlertMetaData updatedMetadata) {
-        return alertMetaDataRepository.findById(id)
-                .map(existing -> {
-                    existing.setVitalSign(updatedMetadata.getVitalSign());
-                    existing.setValue(updatedMetadata.getValue());
-                    existing.setUnit(updatedMetadata.getUnit());
-                    existing.setThreshold(updatedMetadata.getThreshold());
-                    existing.setMeasurement(updatedMetadata.getMeasurement());
-                    existing.setMedicationId(updatedMetadata.getMedicationId());
-                    existing.setSymptomId(updatedMetadata.getSymptomId());
-                    existing.setAppointmentId(updatedMetadata.getAppointmentId());
-                    existing.setAdditionalData(updatedMetadata.getAdditionalData());
-                    return alertMetaDataRepository.save(existing);
-                })
-                .orElseThrow(() -> new RuntimeException("AlertMetadata not found with id: " + id));
+        updatedMetadata.setId(id);
+        return alertMetaDataRepository.save(updatedMetadata);
     }
 
     public void deleteAlertMetadata(Long id) {

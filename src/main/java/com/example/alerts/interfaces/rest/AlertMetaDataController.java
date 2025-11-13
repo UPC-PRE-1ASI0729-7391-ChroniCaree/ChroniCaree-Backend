@@ -11,7 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/alert-metadata")
@@ -54,6 +54,10 @@ public class AlertMetaDataController {
     @PutMapping("/{id}")
     @Operation(summary = "Update alert metadata by ID")
     public ResponseEntity<AlertMetaData> updateAlertMetadata(@PathVariable Long id, @RequestBody AlertMetaData alertMetadata) {
+        Optional<AlertMetaData> oAlertMetaData = alertMetadataService.getAlertMetadataById(id);
+        if (oAlertMetaData.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(alertMetadataService.updateAlertMetadata(id, alertMetadata));
     }
 
