@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
- 
 @Service
 @Transactional
 public class AppointmentService {
@@ -43,20 +42,9 @@ public class AppointmentService {
     }
 
     public Appointment updateAppointment(Long id, Appointment updatedAppointment) {
-        return appointmentRepository.findById(id)
-                .map(existing -> {
-                    existing.setDate(updatedAppointment.getDate());
-                    existing.setTime(updatedAppointment.getTime());
-                    existing.setType(updatedAppointment.getType());
-                    existing.setStatus(updatedAppointment.getStatus());
-                    existing.setNotes(updatedAppointment.getNotes());
-                    existing.setPatientName(updatedAppointment.getPatientName());
-                    existing.setPatientPhone(updatedAppointment.getPatientPhone());
-                    existing.setPatientEmail(updatedAppointment.getPatientEmail());
-                    existing.setDuration(updatedAppointment.getDuration());
-                    return appointmentRepository.save(existing);
-                })
-                .orElseThrow(() -> new RuntimeException("Appointment not found with id: " + id));
+        updatedAppointment.setId(id);
+        return appointmentRepository.save(updatedAppointment);
+
     }
 
     public void deleteAppointment(Long id) {

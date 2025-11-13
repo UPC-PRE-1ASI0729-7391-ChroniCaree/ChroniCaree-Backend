@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/appointments")
@@ -61,6 +61,13 @@ public class AppointmentController {
     @PutMapping("/{id}")
     @Operation(summary = "Update appointment by ID")
     public ResponseEntity<Appointment> updateAppointment(@PathVariable Long id, @RequestBody Appointment appointment) {
+
+        Optional<Appointment> oAppointment = appointmentService.getAppointmentById(id);
+
+        if (oAppointment.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
         return ResponseEntity.ok(appointmentService.updateAppointment(id, appointment));
     }
 
