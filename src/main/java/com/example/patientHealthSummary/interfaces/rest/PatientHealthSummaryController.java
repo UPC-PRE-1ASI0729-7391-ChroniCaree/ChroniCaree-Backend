@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/patient-health-summaries")
@@ -34,9 +35,12 @@ public class PatientHealthSummaryController {
     @GetMapping("/{id}")
     @Operation(summary = "Obtener resumen de paciente por ID")
     public ResponseEntity<PatientHealthSummary> getSummaryById(@PathVariable Long id) {
-        return service.getSummaryById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Optional<PatientHealthSummary> oPatientHealthSummary = service.getSummaryById(id);
+        if (oPatientHealthSummary.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        service.deleteSummary(id);
+        return ResponseEntity.ok(oPatientHealthSummary.get());
     }
 
     @GetMapping("/user/{userId}")
@@ -66,14 +70,22 @@ public class PatientHealthSummaryController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Actualizar resumen de paciente por ID")
-    public ResponseEntity<PatientHealthSummary> updateSummary(@PathVariable Long id,
-            @RequestBody PatientHealthSummary summary) {
+    public ResponseEntity<PatientHealthSummary> updateSummary(@PathVariable Long id, @RequestBody PatientHealthSummary summary) {
+        Optional<PatientHealthSummary> oPatientHealthSummary = service.getSummaryById(id);
+        if (oPatientHealthSummary.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        service.deleteSummary(id);
         return ResponseEntity.ok(service.updateSummary(id, summary));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Eliminar resumen de paciente por ID")
     public ResponseEntity<Void> deleteSummary(@PathVariable Long id) {
+        Optional<PatientHealthSummary> oPatientHealthSummary = service.getSummaryById(id);
+        if (oPatientHealthSummary.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         service.deleteSummary(id);
         return ResponseEntity.noContent().build();
     }

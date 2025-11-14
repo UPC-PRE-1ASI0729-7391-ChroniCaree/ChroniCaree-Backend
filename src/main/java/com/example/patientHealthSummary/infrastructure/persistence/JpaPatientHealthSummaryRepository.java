@@ -12,14 +12,14 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface JpaPatientHealthSummaryRepository
-        extends JpaRepository<PatientHealthSummary, Long>,
-        PatientHealthSummaryRepository {
+public interface JpaPatientHealthSummaryRepository extends JpaRepository<PatientHealthSummary, Long>, PatientHealthSummaryRepository {
 
     @Override
     List<PatientHealthSummary> findAll();
 
+    @Override
     PatientHealthSummary findByUserId(Long userId);
 
+    @Override
     List<PatientHealthSummary> findByAssignedDoctorId(Long doctorId);
 }

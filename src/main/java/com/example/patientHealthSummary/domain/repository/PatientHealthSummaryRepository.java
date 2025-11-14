@@ -16,5 +16,12 @@ public interface PatientHealthSummaryRepository {
 
     PatientHealthSummary save(PatientHealthSummary summary);
 
-    void deleteById(Long id);
+    PatientHealthSummary findByUserId(Long userId);
+
+    List<PatientHealthSummary> findByAssignedDoctorId(Long doctorId); 
+        void deleteById
+        (Long id
+    
+
+);
 }

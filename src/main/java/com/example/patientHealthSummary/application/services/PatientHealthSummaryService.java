@@ -32,11 +32,11 @@ public class PatientHealthSummaryService {
     }
 
     public PatientHealthSummary getSummaryByUserId(Long userId) {
-        return ((JpaPatientHealthSummaryRepository) repository).findByUserId(userId);
+        return repository.findByUserId(userId);
     }
 
     public List<PatientHealthSummary> getSummariesByDoctorId(Long doctorId) {
-        return ((JpaPatientHealthSummaryRepository) repository).findByAssignedDoctorId(doctorId);
+        return repository.findByAssignedDoctorId(doctorId);
     }
 
     public PatientHealthSummary createSummary(PatientHealthSummary summary) {
@@ -44,28 +44,9 @@ public class PatientHealthSummaryService {
     }
 
     public PatientHealthSummary updateSummary(Long id, PatientHealthSummary updated) {
-        return repository.findById(id)
-                .map(existing -> {
-                    existing.setFirstName(updated.getFirstName());
-                    existing.setLastName(updated.getLastName());
-                    existing.setDni(updated.getDni());
-                    existing.setBirthDate(updated.getBirthDate());
-                    existing.setGender(updated.getGender());
-                    existing.setPhone(updated.getPhone());
-                    existing.setHealthStatus(updated.getHealthStatus());
-                    existing.setCriticalAlertsCount(updated.getCriticalAlertsCount());
-                    existing.setActiveAlertsCount(updated.getActiveAlertsCount());
-                    existing.setActiveMedicationsCount(updated.getActiveMedicationsCount());
-                    existing.setActiveDiagnosesCount(updated.getActiveDiagnosesCount());
-                    existing.setLastVitalSigns(updated.getLastVitalSigns());
-                    existing.setLastVisit(updated.getLastVisit());
-                    existing.setNextAppointment(updated.getNextAppointment());
-                    existing.setAssignedSince(updated.getAssignedSince());
-                    existing.setTenantId(updated.getTenantId());
-                    existing.setHospitalName(updated.getHospitalName());
-                    return repository.save(existing);
-                })
-                .orElseThrow(() -> new RuntimeException("Patient summary not found with id: " + id));
+        updated.setId(id);
+        return repository.save(updated);
+
     }
 
     public void deleteSummary(Long id) {
