@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Controlador REST para la gestión de médicos.
@@ -33,9 +34,12 @@ public class DoctorController {
     @GetMapping("/{id}")
     @Operation(summary = "Get doctor by ID")
     public ResponseEntity<Doctor> getDoctorById(@PathVariable Long id) {
-        return doctorService.getDoctorById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Optional<Doctor> oDoctor = doctorService.getDoctorById(id);
+        if (oDoctor.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(oDoctor.get());
     }
 
     @PostMapping
@@ -48,12 +52,20 @@ public class DoctorController {
     @PutMapping("/{id}")
     @Operation(summary = "Update doctor by ID")
     public ResponseEntity<Doctor> updateDoctor(@PathVariable Long id, @RequestBody Doctor doctor) {
+        Optional<Doctor> oDoctor = doctorService.getDoctorById(id);
+        if (oDoctor.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(doctorService.updateDoctor(id, doctor));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete doctor by ID")
     public ResponseEntity<Void> deleteDoctor(@PathVariable Long id) {
+        Optional<Doctor> oDoctor = doctorService.getDoctorById(id);
+        if (oDoctor.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         doctorService.deleteDoctor(id);
         return ResponseEntity.noContent().build();
     }
