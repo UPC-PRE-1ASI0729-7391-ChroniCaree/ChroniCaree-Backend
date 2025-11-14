@@ -34,9 +34,11 @@ public class AppointmentController {
     @GetMapping("/{id}")
     @Operation(summary = "Get appointment by ID")
     public ResponseEntity<Appointment> getAppointmentById(@PathVariable Long id) {
-        return appointmentService.getAppointmentById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Optional<Appointment> oAppintment = appointmentService.getAppointmentById(id);
+        if (oAppintment.isEmpty()) {
+            ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(oAppintment.get());
     }
 
     @GetMapping("/patient/{patientId}")
@@ -74,7 +76,12 @@ public class AppointmentController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete appointment by ID")
     public ResponseEntity<Void> deleteAppointment(@PathVariable Long id) {
+          Optional<Appointment> oAppointment = appointmentService.getAppointmentById(id);
+                  if (oAppointment.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         appointmentService.deleteAppointment(id);
         return ResponseEntity.noContent().build();
+
     }
 }
