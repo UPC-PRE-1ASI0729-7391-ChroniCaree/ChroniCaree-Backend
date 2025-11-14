@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/symptoms")
@@ -34,9 +35,12 @@ public class SymptomController {
     @GetMapping("/{id}")
     @Operation(summary = "Get symptom by ID")
     public ResponseEntity<Symptom> getSymptomById(@PathVariable Long id) {
-        return symptomService.getSymptomById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Optional<Symptom> oAppointment = symptomService.getSymptomById(id);
+        if (oAppointment.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        symptomService.deleteSymptom(id);
+        return ResponseEntity.ok(oAppointment.get());
     }
 
     @GetMapping("/patient/{patientId}")
@@ -55,12 +59,20 @@ public class SymptomController {
     @PutMapping("/{id}")
     @Operation(summary = "Update symptom by ID")
     public ResponseEntity<Symptom> updateSymptom(@PathVariable Long id, @RequestBody Symptom symptom) {
+        Optional<Symptom> oAppointment = symptomService.getSymptomById(id);
+        if (oAppointment.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(symptomService.updateSymptom(id, symptom));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete symptom by ID")
     public ResponseEntity<Void> deleteSymptom(@PathVariable Long id) {
+        Optional<Symptom> oAppointment = symptomService.getSymptomById(id);
+        if (oAppointment.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         symptomService.deleteSymptom(id);
         return ResponseEntity.noContent().build();
     }

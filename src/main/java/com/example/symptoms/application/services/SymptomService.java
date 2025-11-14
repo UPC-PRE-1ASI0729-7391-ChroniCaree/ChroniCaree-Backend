@@ -39,22 +39,9 @@ public class SymptomService {
     }
 
     public Symptom updateSymptom(Long id, Symptom updatedSymptom) {
-        return symptomRepository.findById(id)
-                .map(existing -> {
-                    existing.setGlucose(updatedSymptom.getGlucose());
-                    existing.setBloodPressure(updatedSymptom.getBloodPressure());
-                    existing.setHeartRate(updatedSymptom.getHeartRate());
-                    existing.setTemperature(updatedSymptom.getTemperature());
-                    existing.setOxygenSaturation(updatedSymptom.getOxygenSaturation());
-                    existing.setFatigue(updatedSymptom.getFatigue());
-                    existing.setPain(updatedSymptom.getPain());
-                    existing.setDizziness(updatedSymptom.getDizziness());
-                    existing.setNotes(updatedSymptom.getNotes());
-                    existing.setIsEdited(true);
-                    existing.setEditedAt(updatedSymptom.getEditedAt());
-                    return symptomRepository.save(existing);
-                })
-                .orElseThrow(() -> new RuntimeException("Symptom not found with id: " + id));
+        updatedSymptom.setId(id);
+        return symptomRepository.save(updatedSymptom);
+
     }
 
     public void deleteSymptom(Long id) {
