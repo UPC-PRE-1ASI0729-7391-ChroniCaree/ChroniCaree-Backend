@@ -35,9 +35,13 @@ public class AttachmentController {
     @GetMapping("/{id}")
     @Operation(summary = "Get attachment by ID")
     public ResponseEntity<Attachment> getAttachmentById(@PathVariable String id) {
-        return attachmentService.getAttachmentById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Optional<Attachment> oAttachment = attachmentService.getAttachmentById(id);
+
+        if (oAttachment.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(oAttachment.get());
     }
 
     @PostMapping
@@ -62,6 +66,12 @@ public class AttachmentController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete attachment by ID")
     public ResponseEntity<Void> deleteAttachment(@PathVariable String id) {
+         Optional<Attachment> oAttachment = attachmentService.getAttachmentById(id);
+
+        if (oAttachment.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
         attachmentService.deleteAttachment(id);
         return ResponseEntity.noContent().build();
     }
