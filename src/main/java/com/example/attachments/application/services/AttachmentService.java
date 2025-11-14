@@ -26,7 +26,7 @@ public class AttachmentService {
         return attachmentRepository.findAll();
     }
 
-    public Optional<Attachment> getAttachmentById(String id) {
+    public Optional<Attachment> getAttachmentById(Long id) {
         return attachmentRepository.findById(id);
     }
 
@@ -34,12 +34,12 @@ public class AttachmentService {
         return attachmentRepository.save(attachment);
     }
 
-    public Attachment updateAttachment(String id, Attachment updatedAttachment) {
+    public Attachment updateAttachment(Long id, Attachment updatedAttachment) {
         updatedAttachment.setId(id);
         return attachmentRepository.save(updatedAttachment);
     }
 
-    public void deleteAttachment(String id) {
+    public void deleteAttachment(Long id) {
         attachmentRepository.deleteById(id);
     }
 }

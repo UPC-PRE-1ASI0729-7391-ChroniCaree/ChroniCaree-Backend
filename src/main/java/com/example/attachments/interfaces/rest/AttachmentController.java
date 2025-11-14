@@ -34,7 +34,7 @@ public class AttachmentController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get attachment by ID")
-    public ResponseEntity<Attachment> getAttachmentById(@PathVariable String id) {
+    public ResponseEntity<Attachment> getAttachmentById(@PathVariable Long id) {
         Optional<Attachment> oAttachment = attachmentService.getAttachmentById(id);
 
         if (oAttachment.isEmpty()) {
@@ -53,7 +53,7 @@ public class AttachmentController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update attachment by ID")
-    public ResponseEntity<Attachment> updateAttachment(@PathVariable String id, @RequestBody Attachment attachment) {
+    public ResponseEntity<Attachment> updateAttachment(@PathVariable Long id, @RequestBody Attachment attachment) {
         Optional<Attachment> oAttachment = attachmentService.getAttachmentById(id);
 
         if (oAttachment.isEmpty()) {
@@ -65,8 +65,8 @@ public class AttachmentController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete attachment by ID")
-    public ResponseEntity<Void> deleteAttachment(@PathVariable String id) {
-         Optional<Attachment> oAttachment = attachmentService.getAttachmentById(id);
+    public ResponseEntity<Void> deleteAttachment(@PathVariable Long id) {
+        Optional<Attachment> oAttachment = attachmentService.getAttachmentById(id);
 
         if (oAttachment.isEmpty()) {
             return ResponseEntity.notFound().build();

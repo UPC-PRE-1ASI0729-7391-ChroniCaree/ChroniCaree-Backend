@@ -39,7 +39,6 @@ public class PatientHealthSummaryController {
         if (oPatientHealthSummary.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        service.deleteSummary(id);
         return ResponseEntity.ok(oPatientHealthSummary.get());
     }
 
@@ -47,11 +46,10 @@ public class PatientHealthSummaryController {
     @Operation(summary = "Obtener resumen de paciente por User ID")
     public ResponseEntity<PatientHealthSummary> getSummaryByUserId(@PathVariable Long userId) {
         PatientHealthSummary summary = service.getSummaryByUserId(userId);
-        if (summary != null) {
-            return ResponseEntity.ok(summary);
-        } else {
+        if (summary == null) {
             return ResponseEntity.notFound().build();
         }
+        return ResponseEntity.ok(summary);
     }
 
     @GetMapping("/doctor/{doctorId}")
@@ -75,7 +73,6 @@ public class PatientHealthSummaryController {
         if (oPatientHealthSummary.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        service.deleteSummary(id);
         return ResponseEntity.ok(service.updateSummary(id, summary));
     }
 

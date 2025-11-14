@@ -12,9 +12,9 @@ public interface AttachmentRepository {
 
     List<Attachment> findAll();
 
-    Optional<Attachment> findById(String id);
+    Optional<Attachment> findById(Long id);
 
     Attachment save(Attachment attachment);
 
-    void deleteById(String id);
+    void deleteById(Long id);
 }
