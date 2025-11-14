@@ -15,11 +15,11 @@ public interface ThreadRepository {
 
     List<Thread> findAll();
 
-    Optional<Thread> findById(String id);
+    Optional<Thread> findById(Long id);
 
     List<Thread> findByPatientId(String patientId);
 
     Thread save(Thread thread);
 
-    void deleteById(String id);
+    void deleteById(Long id);
 }

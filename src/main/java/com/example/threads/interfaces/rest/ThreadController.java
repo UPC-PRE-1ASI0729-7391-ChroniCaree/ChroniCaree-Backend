@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Controlador REST para la gestión de Threads.
@@ -35,10 +36,13 @@ public class ThreadController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get thread by ID")
-    public ResponseEntity<Thread> getThreadById(@PathVariable String id) {
-        return threadService.getThreadById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Thread> getThreadById(@PathVariable Long id) {
+        Optional<Thread> oThread = threadService.getThreadById(id);
+        if (oThread.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(oThread.get());
     }
 
     @GetMapping("/patient/{patientId}")
@@ -56,13 +60,22 @@ public class ThreadController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update thread by ID")
-    public ResponseEntity<Thread> updateThread(@PathVariable String id, @RequestBody Thread thread) {
+    public ResponseEntity<Thread> updateThread(@PathVariable Long id, @RequestBody Thread thread) {
+        Optional<Thread> oThread = threadService.getThreadById(id);
+        if (oThread.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
         return ResponseEntity.ok(threadService.updateThread(id, thread));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete thread by ID")
-    public ResponseEntity<Void> deleteThread(@PathVariable String id) {
+    public ResponseEntity<Void> deleteThread(@PathVariable Long id) {
+        Optional<Thread> oThread = threadService.getThreadById(id);
+        if (oThread.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         threadService.deleteThread(id);
         return ResponseEntity.noContent().build();
     }
