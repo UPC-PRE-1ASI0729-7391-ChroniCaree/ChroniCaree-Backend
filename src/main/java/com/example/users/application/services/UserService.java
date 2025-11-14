@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
- 
 @Service
 @Transactional
 public class UserService {
@@ -35,20 +34,13 @@ public class UserService {
     }
 
     public User create(User user) {
-        // Aquí podrías hashear el password y validar email único
         return repository.save(user);
     }
 
     public User update(Long id, User updated) {
-        return repository.findById(id)
-                .map(existing -> {
-                    existing.setName(updated.getName());
-                    existing.setRole(updated.getRole());
-                    existing.setVerified(updated.isVerified());
-                    existing.setTwoFactorEnabled(updated.isTwoFactorEnabled());
-                    return repository.save(existing);
-                })
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        updated.setId(id);
+        return repository.save(updated);
+
     }
 
     public void delete(Long id) {

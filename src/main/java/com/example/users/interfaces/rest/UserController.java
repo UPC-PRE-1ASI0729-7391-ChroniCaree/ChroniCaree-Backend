@@ -9,6 +9,7 @@ import com.example.users.domain.model.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
- 
 @RestController
 @RequestMapping("/api/v1/users")
 @Tag(name = "Users", description = "User management endpoints")
@@ -40,9 +40,11 @@ public class UserController {
     @GetMapping("/{id}")
     @Operation(summary = "Get user by ID")
     public ResponseEntity<User> getById(@PathVariable Long id) {
-        return service.getById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Optional<User> oUser = service.getById(id);
+        if (oUser.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(oUser.get());
     }
 
     @PostMapping
@@ -54,12 +56,20 @@ public class UserController {
     @PutMapping("/{id}")
     @Operation(summary = "Update an existing user")
     public ResponseEntity<User> update(@PathVariable Long id, @RequestBody User user) {
+        Optional<User> oUser = service.getById(id);
+        if (oUser.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(service.update(id, user));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a user by ID")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
+        Optional<User> oUser = service.getById(id);
+        if (oUser.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
