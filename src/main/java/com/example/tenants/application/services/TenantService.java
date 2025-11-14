@@ -11,7 +11,6 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import com.example.tenants.domain.repository.TenantRepository;
 
-
 @Service
 @Transactional
 public class TenantService {
@@ -35,12 +34,8 @@ public class TenantService {
     }
 
     public Tenant updateTenant(Long id, Tenant updatedTenant) {
-        return tenantRepository.findById(id)
-                .map(existing -> {
-                    existing.setName(updatedTenant.getName());
-                    return tenantRepository.save(existing);
-                })
-                .orElseThrow(() -> new RuntimeException("Tenant not found with id: " + id));
+        updatedTenant.setId(id);
+        return tenantRepository.save(updatedTenant);
     }
 
     public void deleteTenant(Long id) {

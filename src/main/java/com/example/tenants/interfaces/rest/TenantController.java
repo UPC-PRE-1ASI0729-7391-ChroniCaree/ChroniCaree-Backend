@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/tenants")
@@ -49,12 +50,20 @@ public class TenantController {
     @PutMapping("/{id}")
     @Operation(summary = "Update tenant by ID")
     public ResponseEntity<Tenant> updateTenant(@PathVariable Long id, @RequestBody Tenant tenant) {
+        Optional<Tenant> oTenant = tenantService.getTenantById(id);
+        if (oTenant.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(tenantService.updateTenant(id, tenant));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete tenant by ID")
     public ResponseEntity<Void> deleteTenant(@PathVariable Long id) {
+        Optional<Tenant> oTenant = tenantService.getTenantById(id);
+        if (oTenant.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         tenantService.deleteTenant(id);
         return ResponseEntity.noContent().build();
     }
