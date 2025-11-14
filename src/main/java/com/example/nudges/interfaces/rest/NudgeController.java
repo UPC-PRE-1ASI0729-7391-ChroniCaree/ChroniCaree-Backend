@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Controlador REST para la gestión de Nudges.
@@ -20,49 +21,64 @@ import java.util.List;
 @RequestMapping("/api/v1/nudges")
 @Tag(name = "Nudges", description = "Nudge management API")
 public class NudgeController {
-
+    
     private final NudgeService nudgeService;
-
+    
     public NudgeController(NudgeService nudgeService) {
         this.nudgeService = nudgeService;
     }
-
+    
     @GetMapping
     @Operation(summary = "List all nudges")
     public ResponseEntity<List<Nudge>> getAllNudges() {
         return ResponseEntity.ok(nudgeService.getAllNudges());
     }
-
+    
     @GetMapping("/{id}")
     @Operation(summary = "Get nudge by ID")
     public ResponseEntity<Nudge> getNudgeById(@PathVariable Long id) {
-        return nudgeService.getNudgeById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Optional<Nudge> oNudge = nudgeService.getNudgeById(id);
+        
+        if (oNudge.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        return ResponseEntity.ok(oNudge.get());
     }
-
+    
     @GetMapping("/patient/{patientId}")
     @Operation(summary = "Get nudges by patient ID")
     public ResponseEntity<List<Nudge>> getNudgesByPatientId(@PathVariable Long patientId) {
         return ResponseEntity.ok(nudgeService.getNudgesByPatientId(patientId));
     }
-
+    
     @PostMapping
     @Operation(summary = "Create new nudge")
     public ResponseEntity<Nudge> createNudge(@RequestBody Nudge nudge) {
         Nudge created = nudgeService.createNudge(nudge);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
-
+    
     @PutMapping("/{id}")
     @Operation(summary = "Update nudge by ID")
     public ResponseEntity<Nudge> updateNudge(@PathVariable Long id, @RequestBody Nudge nudge) {
+        Optional<Nudge> oNudge = nudgeService.getNudgeById(id);
+        
+        if (oNudge.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
         return ResponseEntity.ok(nudgeService.updateNudge(id, nudge));
     }
-
+    
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete nudge by ID")
     public ResponseEntity<Void> deleteNudge(@PathVariable Long id) {
+        Optional<Nudge> oNudge = nudgeService.getNudgeById(id);
+        
+        if (oNudge.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         nudgeService.deleteNudge(id);
         return ResponseEntity.noContent().build();
     }

@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
- 
 @Service
 @Transactional
 public class NudgeService {
@@ -39,22 +38,9 @@ public class NudgeService {
     }
 
     public Nudge updateNudge(Long id, Nudge updatedNudge) {
-        return nudgeRepository.findById(id)
-                .map(existing -> {
-                    existing.setType(updatedNudge.getType());
-                    existing.setPriority(updatedNudge.getPriority());
-                    existing.setTitle(updatedNudge.getTitle());
-                    existing.setMessage(updatedNudge.getMessage());
-                    existing.setActionLabel(updatedNudge.getActionLabel());
-                    existing.setActionRoute(updatedNudge.getActionRoute());
-                    existing.setIcon(updatedNudge.getIcon());
-                    existing.setDismissedAt(updatedNudge.getDismissedAt());
-                    existing.setIsSnoozed(updatedNudge.getIsSnoozed());
-                    existing.setSnoozeUntil(updatedNudge.getSnoozeUntil());
-                    existing.setDismissedAt(updatedNudge.getDismissedAt());
-                    return nudgeRepository.save(existing);
-                })
-                .orElseThrow(() -> new RuntimeException("Nudge not found with id: " + id));
+        updatedNudge.setId(id);
+        return nudgeRepository.save(updatedNudge);
+
     }
 
     public void deleteNudge(Long id) {
