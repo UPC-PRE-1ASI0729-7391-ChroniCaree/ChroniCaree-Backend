@@ -13,7 +13,7 @@ public interface MedicationRepository {
 
     List<Medication> findAll();
 
-    Optional<Medication> findById(String id);
+    Optional<Medication> findById(Long id);
 
     List<Medication> findByPatientId(String patientId);
 
@@ -21,5 +21,5 @@ public interface MedicationRepository {
 
     Medication save(Medication medication);
 
-    void deleteById(String id);
+    void deleteById(Long id);
 }
