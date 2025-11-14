@@ -20,19 +20,19 @@ public class Message {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    private Long id;
 
-    private String threadId;
+    private Long threadId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SenderRole senderRole;
 
     @Column(nullable = false)
-    private String senderId;
+    private Long senderId;
 
     @Column(nullable = false)
-    private String receiverId;
+    private Long receiverId;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String body;

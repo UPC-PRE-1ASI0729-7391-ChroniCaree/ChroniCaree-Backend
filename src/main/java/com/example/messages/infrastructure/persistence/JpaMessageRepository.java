@@ -13,17 +13,17 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface JpaMessageRepository extends JpaRepository<Message, String>, MessageRepository {
+public interface JpaMessageRepository extends JpaRepository<Message, Long>, MessageRepository {
 
     @Override
-    List<Message> findByThreadId(String threadId);
+    List<Message> findByThreadId(Long threadId);
 
     @Override
-    List<Message> findByReceiverId(String receiverId);
+    List<Message> findByReceiverId(Long receiverId);
 
     @Override
-    List<Message> findBySenderId(String senderId);
+    List<Message> findBySenderId(Long senderId);
 
     @Override
-    Optional<Message> findById(String id);
+    Optional<Message> findById(Long id);
 }

@@ -12,6 +12,7 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/messages")
@@ -32,15 +33,20 @@ public class MessageController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get message by ID")
-    public ResponseEntity<Message> getMessageById(@PathVariable String id) {
-        return messageService.getMessageById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Message> getMessageById(@PathVariable Long id) {
+        Optional<Message> oMessage = messageService.getMessageById(id);
+
+        if (oMessage.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(oMessage.get());
+
     }
 
     @GetMapping("/thread/{threadId}")
     @Operation(summary = "Get messages by thread ID")
-    public ResponseEntity<List<Message>> getMessagesByThread(@PathVariable String threadId) {
+    public ResponseEntity<List<Message>> getMessagesByThread(@PathVariable Long threadId) {
         return ResponseEntity.ok(messageService.getMessagesByThread(threadId));
     }
 
@@ -53,13 +59,30 @@ public class MessageController {
 
     @PutMapping("/{id}/read")
     @Operation(summary = "Mark message as read")
-    public ResponseEntity<Message> markAsRead(@PathVariable String id) {
+    public ResponseEntity<Message> markAsRead(@PathVariable Long id) {
         return ResponseEntity.ok(messageService.markAsRead(id));
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update message by ID")
+    public ResponseEntity<Message> markAsRead(@PathVariable Long id, @RequestBody Message message) {
+        Optional<Message> oMessage = messageService.getMessageById(id);
+
+        if (oMessage.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(messageService.updateMessage(id, message));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete message by ID")
-    public ResponseEntity<Void> deleteMessage(@PathVariable String id) {
+    public ResponseEntity<Void> deleteMessage(@PathVariable Long id) {
+        Optional<Message> oMessage = messageService.getMessageById(id);
+
+        if (oMessage.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         messageService.deleteMessage(id);
         return ResponseEntity.noContent().build();
     }

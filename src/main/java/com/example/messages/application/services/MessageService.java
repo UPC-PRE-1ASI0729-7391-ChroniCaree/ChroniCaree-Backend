@@ -26,11 +26,11 @@ public class MessageService {
         return messageRepository.findAll();
     }
 
-    public Optional<Message> getMessageById(String id) {
+    public Optional<Message> getMessageById(Long id) {
         return messageRepository.findById(id);
     }
 
-    public List<Message> getMessagesByThread(String threadId) {
+    public List<Message> getMessagesByThread(Long threadId) {
         return messageRepository.findByThreadId(threadId);
     }
 
@@ -38,7 +38,7 @@ public class MessageService {
         return messageRepository.save(message);
     }
 
-    public Message markAsRead(String id) {
+    public Message markAsRead(Long id) {
         return messageRepository.findById(id)
                 .map(msg -> {
                     msg.setRead(true);
@@ -47,7 +47,12 @@ public class MessageService {
                 .orElseThrow(() -> new RuntimeException("Message not found with id: " + id));
     }
 
-    public void deleteMessage(String id) {
+    public Message updateMessage(Long id, Message updatedMessage) {
+        updatedMessage.setId(id);
+        return messageRepository.save(updatedMessage);
+    }
+
+    public void deleteMessage(Long id) {
         messageRepository.deleteById(id);
     }
 }

@@ -12,15 +12,15 @@ public interface MessageRepository {
 
     List<Message> findAll();
 
-    Optional<Message> findById(String id);
+    Optional<Message> findById(Long id);
 
-    List<Message> findByThreadId(String threadId);
+    List<Message> findByThreadId(Long threadId);
 
-    List<Message> findByReceiverId(String receiverId);
+    List<Message> findByReceiverId(Long receiverId);
 
-    List<Message> findBySenderId(String senderId);
+    List<Message> findBySenderId(Long senderId);
 
     Message save(Message message);
 
-    void deleteById(String id);
+    void deleteById(Long id);
 }
