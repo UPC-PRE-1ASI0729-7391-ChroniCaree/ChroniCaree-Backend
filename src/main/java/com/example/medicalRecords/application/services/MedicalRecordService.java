@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
- 
 @Service
 @Transactional
 public class MedicalRecordService {
@@ -43,28 +42,9 @@ public class MedicalRecordService {
     }
 
     public MedicalRecord updateRecord(Long id, MedicalRecord updatedRecord) {
-        return medicalRecordRepository.findById(id)
-                .map(existing -> {
-                    existing.setType(updatedRecord.getType());
-                    existing.setDate(updatedRecord.getDate());
-                    existing.setGlucose(updatedRecord.getGlucose());
-                    existing.setBloodPressure(updatedRecord.getBloodPressure());
-                    existing.setHeartRate(updatedRecord.getHeartRate());
-                    existing.setTemperature(updatedRecord.getTemperature());
-                    existing.setWeight(updatedRecord.getWeight());
-                    existing.setFatigue(updatedRecord.getFatigue());
-                    existing.setPain(updatedRecord.getPain());
-                    existing.setDizziness(updatedRecord.getDizziness());
-                    existing.setDiagnosis(updatedRecord.getDiagnosis());
-                    existing.setTreatment(updatedRecord.getTreatment());
-                    existing.setNotes(updatedRecord.getNotes());
-                    existing.setPatientName(updatedRecord.getPatientName());
-                    existing.setReviewStatus(updatedRecord.getReviewStatus());
-                    existing.setReviewedAt(updatedRecord.getReviewedAt());
-                    existing.setReviewedBy(updatedRecord.getReviewedBy());
-                    return medicalRecordRepository.save(existing);
-                })
-                .orElseThrow(() -> new RuntimeException("MedicalRecord not found with id: " + id));
+
+        updatedRecord.setId(id);
+        return medicalRecordRepository.save(updatedRecord);
     }
 
     public void deleteRecord(Long id) {

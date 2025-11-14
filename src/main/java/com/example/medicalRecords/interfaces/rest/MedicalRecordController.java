@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Controlador REST para la gestión de registros médicos.
@@ -36,9 +37,11 @@ public class MedicalRecordController {
     @GetMapping("/{id}")
     @Operation(summary = "Get medical record by ID")
     public ResponseEntity<MedicalRecord> getRecordById(@PathVariable Long id) {
-        return medicalRecordService.getRecordById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Optional<MedicalRecord> oMedicalRecord = medicalRecordService.getRecordById(id);
+        if (oMedicalRecord.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(oMedicalRecord.get());
     }
 
     @GetMapping("/patient/{patientId}")
@@ -63,13 +66,22 @@ public class MedicalRecordController {
     @PutMapping("/{id}")
     @Operation(summary = "Update medical record by ID")
     public ResponseEntity<MedicalRecord> updateRecord(@PathVariable Long id, @RequestBody MedicalRecord record) {
+        Optional<MedicalRecord> oMedicalRecord = medicalRecordService.getRecordById(id);
+        if (oMedicalRecord.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(medicalRecordService.updateRecord(id, record));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete medical record by ID")
     public ResponseEntity<Void> deleteRecord(@PathVariable Long id) {
+        Optional<MedicalRecord> oMedicalRecord = medicalRecordService.getRecordById(id);
+        if (oMedicalRecord.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         medicalRecordService.deleteRecord(id);
         return ResponseEntity.noContent().build();
     }
+
 }
