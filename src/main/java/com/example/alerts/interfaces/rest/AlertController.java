@@ -34,7 +34,7 @@ public class AlertController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get alert by ID")
-    public ResponseEntity<Alert> getAlertById(@PathVariable String id) {
+    public ResponseEntity<Alert> getAlertById(@PathVariable Long id) {
         Optional<Alert> oAlert = alertService.getAlertById(id);
         if (oAlert.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -58,7 +58,7 @@ public class AlertController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update alert by ID")
-    public ResponseEntity<Alert> updateAlert(@PathVariable String id, @RequestBody Alert alert) {
+    public ResponseEntity<Alert> updateAlert(@PathVariable Long id, @RequestBody Alert alert) {
 
         Optional<Alert> oAlert = alertService.getAlertById(id);
 
@@ -71,7 +71,7 @@ public class AlertController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete alert by ID")
-    public ResponseEntity<Void> deleteAlert(@PathVariable String id) {
+    public ResponseEntity<Void> deleteAlert(@PathVariable Long id) {
         Optional<Alert> oAlert = alertService.getAlertById(id);
         if (oAlert.isEmpty()) {
             return ResponseEntity.notFound().build();

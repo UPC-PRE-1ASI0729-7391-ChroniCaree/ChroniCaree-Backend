@@ -26,7 +26,7 @@ public class AlertService {
         return alertRepository.findAll();
     }
 
-    public Optional<Alert> getAlertById(String id) {
+    public Optional<Alert> getAlertById(Long id) {
         return alertRepository.findById(id);
     }
 
@@ -38,12 +38,12 @@ public class AlertService {
         return alertRepository.save(alert);
     }
 
-    public Alert updateAlert(String id, Alert updatedAlert) {
+    public Alert updateAlert(Long id, Alert updatedAlert) {
         updatedAlert.setId(id);
         return alertRepository.save(updatedAlert);
     }
 
-    public void deleteAlert(String id) {
+    public void deleteAlert(Long id) {
         alertRepository.deleteById(id);
     }
 }

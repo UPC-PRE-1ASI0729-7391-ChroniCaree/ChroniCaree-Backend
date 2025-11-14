@@ -12,11 +12,11 @@ public interface AlertRepository {
 
     List<Alert> findAll();
 
-    Optional<Alert> findById(String id);
+    Optional<Alert> findById(Long id);
 
     List<Alert> findByPatientId(String patientId);
 
     Alert save(Alert alert);
 
-    void deleteById(String id);
+    void deleteById(Long id);
 }
