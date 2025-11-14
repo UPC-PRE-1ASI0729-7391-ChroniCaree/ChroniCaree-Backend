@@ -34,21 +34,8 @@ public class DoctorService {
     }
 
     public Doctor updateDoctor(Long id, Doctor updatedDoctor) {
-        return doctorRepository.findById(id)
-                .map(existing -> {
-                    existing.setUserId(updatedDoctor.getUserId());
-                    existing.setTenantId(updatedDoctor.getTenantId());
-                    existing.setIndependent(updatedDoctor.isIndependent());
-                    existing.setFirstName(updatedDoctor.getFirstName());
-                    existing.setLastName(updatedDoctor.getLastName());
-                    existing.setDni(updatedDoctor.getDni());
-                    existing.setSpecialty(updatedDoctor.getSpecialty());
-                    existing.setLicenseNumber(updatedDoctor.getLicenseNumber());
-                    existing.setPhone(updatedDoctor.getPhone());
-                    existing.setVerified(updatedDoctor.isVerified());
-                    return doctorRepository.save(existing);
-                })
-                .orElseThrow(() -> new RuntimeException("Doctor not found with id: " + id));
+        updatedDoctor.setId(id);
+        return doctorRepository.save(updatedDoctor);
     }
 
     public void deleteDoctor(Long id) {
