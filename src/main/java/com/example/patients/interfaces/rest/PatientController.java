@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/patients")
@@ -32,17 +33,21 @@ public class PatientController {
     @GetMapping("/{id}")
     @Operation(summary = "Get patient by ID")
     public ResponseEntity<Patient> getPatientById(@PathVariable Long id) {
-        return patientService.getPatientById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Optional<Patient> oPatient = patientService.getPatientById(id);
+        if (oPatient.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(oPatient.get());
     }
 
     @GetMapping("/dni/{dni}")
     @Operation(summary = "Get patient by DNI")
     public ResponseEntity<Patient> getPatientByDni(@PathVariable String dni) {
-        return patientService.getPatientByDni(dni)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Optional<Patient> oPatient = patientService.getPatientByDni(dni);
+        if (oPatient.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+         return ResponseEntity.ok(oPatient.get());
     }
 
     @PostMapping
@@ -55,12 +60,20 @@ public class PatientController {
     @PutMapping("/{id}")
     @Operation(summary = "Update patient by ID")
     public ResponseEntity<Patient> updatePatient(@PathVariable Long id, @RequestBody Patient patient) {
+        Optional<Patient> oPatient = patientService.getPatientById(id);
+        if (oPatient.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(patientService.updatePatient(id, patient));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete patient by ID")
     public ResponseEntity<Void> deletePatient(@PathVariable Long id) {
+        Optional<Patient> oPatient = patientService.getPatientById(id);
+        if (oPatient.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         patientService.deletePatient(id);
         return ResponseEntity.noContent().build();
     }

@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
- 
 @Service
 @Transactional
 public class PatientService {
@@ -35,7 +34,6 @@ public class PatientService {
     }
 
     public Patient createPatient(Patient patient) {
-        // Validar que no exista otro paciente con el mismo DNI
         patientRepository.findByDni(patient.getDni()).ifPresent(existing -> {
             throw new RuntimeException("A patient with DNI " + patient.getDni() + " already exists.");
         });
@@ -44,25 +42,8 @@ public class PatientService {
     }
 
     public Patient updatePatient(Long id, Patient updatedPatient) {
-        return patientRepository.findById(id)
-                .map(existing -> {
-                    existing.setUserId(updatedPatient.getUserId());
-                    existing.setAssignedDoctorId(updatedPatient.getAssignedDoctorId());
-                    existing.setTenantId(updatedPatient.getTenantId());
-                    existing.setSubscriptionId(updatedPatient.getSubscriptionId());
-                    existing.setFirstName(updatedPatient.getFirstName());
-                    existing.setLastName(updatedPatient.getLastName());
-                    existing.setDni(updatedPatient.getDni());
-                    existing.setBirthDate(updatedPatient.getBirthDate());
-                    existing.setGender(updatedPatient.getGender());
-                    existing.setPhone(updatedPatient.getPhone());
-                    existing.setAddress(updatedPatient.getAddress());
-                    existing.setWeight(updatedPatient.getWeight());
-                    existing.setHeight(updatedPatient.getHeight());
-                    existing.setBmi(updatedPatient.getBmi());
-                    return patientRepository.save(existing);
-                })
-                .orElseThrow(() -> new RuntimeException("Patient not found with id: " + id));
+        updatedPatient.setId(id);
+        return patientRepository.save(updatedPatient);
     }
 
     public void deletePatient(Long id) {
