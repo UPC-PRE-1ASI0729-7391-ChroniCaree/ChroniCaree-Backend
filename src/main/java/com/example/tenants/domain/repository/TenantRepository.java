@@ -4,11 +4,15 @@
  */
 package com.example.tenants.domain.repository;
 
-import com.example.tenants.domain.model.Tenant;
+import com.example.tenants.domain.aggregates.Tenant;
 import java.util.List;
 import java.util.Optional;
 
-
+/**
+ * Puerto de repositorio para Tenant (domain repository).
+ *
+ * Implementaciones adaptarán entre TenantEntity <-> Tenant aggregate.
+ */
 public interface TenantRepository {
 
     List<Tenant> findAll();
@@ -21,4 +25,5 @@ public interface TenantRepository {
 
     void deleteById(Long id);
 
+    boolean existsById(Long id);
 }

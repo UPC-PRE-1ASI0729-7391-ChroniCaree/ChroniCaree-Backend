@@ -3,7 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.example.tenants.domain.model;
-
+/**
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -31,3 +31,4 @@ public class Tenant {
     @Column(nullable = false, unique = true)
     private String name;
 }
+**/

@@ -1,45 +1,74 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.example.tenants.application.services;
 
-import com.example.tenants.domain.model.Tenant;
-import jakarta.transaction.Transactional;
-import java.util.List;
-import java.util.Optional;
+import com.example.tenants.domain.aggregates.Tenant;
+import com.example.tenants.domain.commands.CreateTenantCommand;
+import com.example.tenants.domain.commands.DeleteTenantCommand;
+import com.example.tenants.domain.commands.UpdateTenantCommand;
+import com.example.tenants.domain.events.TenantCreatedEvent;
+import com.example.tenants.domain.repository.TenantRepository;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import com.example.tenants.domain.repository.TenantRepository;
+import java.util.List;
+import java.util.Optional;
 
+/**
+ * TenantService - Lógica de aplicación para Tenants.
+ */
 @Service
 @Transactional
 public class TenantService {
 
-    private final TenantRepository tenantRepository;
+    private final TenantRepository repository;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public TenantService(TenantRepository tenantRepository) {
-        this.tenantRepository = tenantRepository;
+    public TenantService(TenantRepository repository, ApplicationEventPublisher eventPublisher) {
+        this.repository = repository;
+        this.eventPublisher = eventPublisher;
     }
 
     public List<Tenant> getAllTenants() {
-        return tenantRepository.findAll();
+        return repository.findAll();
     }
 
     public Optional<Tenant> getTenantById(Long id) {
-        return tenantRepository.findById(id);
+        return repository.findById(id);
     }
 
-    public Tenant createTenant(Tenant tenant) {
-        return tenantRepository.save(tenant);
+    public Tenant createTenant(CreateTenantCommand command) {
+        // Validar unicidad
+        if (repository.findByName(command.name().value()).isPresent()) {
+            throw new IllegalArgumentException("Tenant name already exists");
+        }
+        Tenant tenant = new Tenant(command.name());
+        Tenant saved = repository.save(tenant);
+
+        // Publicar evento
+        eventPublisher.publishEvent(new TenantCreatedEvent(this, saved.getId(), saved.getName()));
+        return saved;
     }
 
-    public Tenant updateTenant(Long id, Tenant updatedTenant) {
-        updatedTenant.setId(id);
-        return tenantRepository.save(updatedTenant);
+    public Tenant updateTenant(UpdateTenantCommand command) {
+        Tenant existing = repository.findById(command.tenantId())
+                .orElseThrow(() -> new IllegalArgumentException("Tenant not found"));
+
+        // Validar si el nuevo nombre está en uso por otro tenant
+        var maybeByName = repository.findByName(command.name().value());
+        if (maybeByName.isPresent() && !maybeByName.get().getId().equals(existing.getId())) {
+            throw new IllegalArgumentException("Tenant name already in use by another tenant");
+        }
+
+        existing.updateName(command.name());
+        return repository.save(existing);
     }
 
-    public void deleteTenant(Long id) {
-        tenantRepository.deleteById(id);
+    public void deleteTenant(DeleteTenantCommand command) {
+        if (!repository.existsById(command.tenantId())) {
+            throw new IllegalArgumentException("Tenant not found");
+        }
+        repository.deleteById(command.tenantId());
+        // podrías publicar TenantDeletedEvent si lo deseas
     }
-
 }
