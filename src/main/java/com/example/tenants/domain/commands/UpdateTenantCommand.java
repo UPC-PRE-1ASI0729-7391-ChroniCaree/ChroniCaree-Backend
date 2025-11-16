@@ -4,8 +4,7 @@
  */
 package com.example.tenants.domain.commands;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+ 
 
 import com.example.tenants.domain.valueobjects.TenantName;
 
@@ -17,7 +16,7 @@ import com.example.tenants.domain.valueobjects.TenantName;
  */
 public record UpdateTenantCommand(Long tenantId, TenantName name) {
 
-    public UpdateTenantCommand {
+    public UpdateTenantCommand  {
         if (tenantId == null || tenantId <= 0) {
             throw new IllegalArgumentException("tenantId invalid");
         }

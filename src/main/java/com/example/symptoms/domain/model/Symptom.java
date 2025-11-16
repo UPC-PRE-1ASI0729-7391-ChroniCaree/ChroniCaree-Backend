@@ -3,7 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.example.symptoms.domain.model;
-
+/**
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -48,3 +48,4 @@ public class Symptom {
 
     private LocalDateTime editedAt;
 }
+**/

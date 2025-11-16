@@ -4,11 +4,14 @@
  */
 package com.example.symptoms.application.services;
 
-import com.example.symptoms.domain.model.Symptom;
-import com.example.symptoms.domain.repository.SymptomRepository;
-import jakarta.transaction.Transactional;
+import com.example.symptoms.domain.aggregate.Symptom;
+import com.example.symptoms.domain.commands.CreateSymptomCommand;
+import com.example.symptoms.domain.commands.UpdateSymptomCommand;
+import com.example.symptoms.infrastructure.persistence.JpaSymptomRepository;
+import com.example.symptoms.domain.valueobject.PatientId;
 import org.springframework.stereotype.Service;
 
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,35 +19,37 @@ import java.util.Optional;
 @Transactional
 public class SymptomService {
 
-    private final SymptomRepository symptomRepository;
+    private final JpaSymptomRepository repository;
 
-    public SymptomService(SymptomRepository symptomRepository) {
-        this.symptomRepository = symptomRepository;
+    public SymptomService(JpaSymptomRepository repository) {
+        this.repository = repository;
     }
 
     public List<Symptom> getAllSymptoms() {
-        return symptomRepository.findAll();
+        return repository.findAll();
     }
 
     public Optional<Symptom> getSymptomById(Long id) {
-        return symptomRepository.findById(id);
+        return repository.findById(id);
     }
 
     public List<Symptom> getSymptomsByPatientId(Long patientId) {
-        return symptomRepository.findByPatientId(patientId);
+        return repository.findByPatientId(new PatientId(patientId));
     }
 
-    public Symptom createSymptom(Symptom symptom) {
-        return symptomRepository.save(symptom);
+    public Symptom createSymptom(CreateSymptomCommand command) {
+        Symptom symptom = new Symptom(command);
+        return repository.save(symptom);
     }
 
-    public Symptom updateSymptom(Long id, Symptom updatedSymptom) {
-        updatedSymptom.setId(id);
-        return symptomRepository.save(updatedSymptom);
-
+    public Symptom updateSymptom(Long id, UpdateSymptomCommand command) {
+        Symptom symptom = repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Symptom not found"));
+        symptom.updateSymptoms(command);
+        return repository.save(symptom);
     }
 
     public void deleteSymptom(Long id) {
-        symptomRepository.deleteById(id);
+        repository.deleteById(id);
     }
 }

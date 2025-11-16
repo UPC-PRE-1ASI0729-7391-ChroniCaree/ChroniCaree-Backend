@@ -4,7 +4,7 @@
  */
 package com.example.symptoms.domain.repository;
 
-import com.example.symptoms.domain.model.Symptom;
+import com.example.symptoms.domain.aggregate.Symptom;
 import java.util.List;
 import java.util.Optional;
 
