@@ -3,7 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.example.patients.domain.model;
-
+/**
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -61,3 +61,4 @@ public class Patient {
     @Column(nullable = false)
     private Double bmi;
 }
+**/

@@ -4,7 +4,9 @@
  */
 package com.example.patients.domain.repository;
 
-import com.example.patients.domain.model.Patient;
+import com.example.patients.domain.aggregates.Patient;
+import com.example.patients.domain.valueobjects.Dni;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -14,7 +16,7 @@ public interface PatientRepository {
 
     Optional<Patient> findById(Long id);
 
-    Optional<Patient> findByDni(String dni);
+    Optional<Patient> findByDni(Dni dni);
 
     Patient save(Patient patient);
 

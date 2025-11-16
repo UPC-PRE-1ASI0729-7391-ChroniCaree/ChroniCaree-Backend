@@ -4,10 +4,18 @@
  */
 package com.example.patients.application.services;
 
-import com.example.patients.domain.model.Patient;
+import com.example.patients.domain.aggregates.Patient;
+import com.example.patients.domain.commands.CreatePatientCommand;
+import com.example.patients.domain.event.PatientCreatedEvent;
+import com.example.patients.domain.event.PatientDeletedEvent;
+import com.example.patients.domain.event.PatientUpdatedEvent;
+
 import com.example.patients.domain.repository.PatientRepository;
-import jakarta.transaction.Transactional;
+import com.example.patients.domain.valueobjects.Dni;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -16,9 +24,11 @@ import java.util.Optional;
 public class PatientService {
 
     private final PatientRepository patientRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public PatientService(PatientRepository patientRepository) {
+    public PatientService(PatientRepository patientRepository, ApplicationEventPublisher eventPublisher) {
         this.patientRepository = patientRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     public List<Patient> getAllPatients() {
@@ -29,24 +39,44 @@ public class PatientService {
         return patientRepository.findById(id);
     }
 
-    public Optional<Patient> getPatientByDni(String dni) {
+    public Optional<Patient> getPatientByDni(Dni dni) {
         return patientRepository.findByDni(dni);
     }
 
-    public Patient createPatient(Patient patient) {
-        patientRepository.findByDni(patient.getDni()).ifPresent(existing -> {
-            throw new RuntimeException("A patient with DNI " + patient.getDni() + " already exists.");
+    public Patient createPatient(CreatePatientCommand command) {
+        patientRepository.findByDni(command.dni()).ifPresent(existing -> {
+            throw new RuntimeException("Patient with DNI " + command.dni().value() + " already exists");
         });
 
-        return patientRepository.save(patient);
+        Patient patient = new Patient(command);
+        Patient saved = patientRepository.save(patient);
+
+        // Publicar evento
+        eventPublisher.publishEvent(new PatientCreatedEvent(this, saved.getId(), saved.getDni()));
+
+        return saved;
     }
 
     public Patient updatePatient(Long id, Patient updatedPatient) {
-        updatedPatient.setId(id);
-        return patientRepository.save(updatedPatient);
+        Patient existing = patientRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Patient not found"));
+
+        existing.updateFrom(updatedPatient);
+        Patient saved = patientRepository.save(existing);
+
+        // Publicar evento
+        eventPublisher.publishEvent(new PatientUpdatedEvent(this, saved.getId(), saved.getDni()));
+
+        return saved;
     }
 
     public void deletePatient(Long id) {
-        patientRepository.deleteById(id);
+        Patient existing = patientRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Patient not found"));
+
+        patientRepository.deleteById(existing.getId());
+
+        // Publicar evento
+        eventPublisher.publishEvent(new PatientDeletedEvent(this, id));
     }
 }

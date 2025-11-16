@@ -5,11 +5,14 @@
 package com.example.patients.interfaces.rest;
 
 import com.example.patients.application.services.PatientService;
-import com.example.patients.domain.model.Patient;
+import com.example.patients.domain.aggregates.Patient;
+import com.example.patients.domain.commands.CreatePatientCommand;
+import com.example.patients.domain.valueobjects.Dni;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -33,48 +36,45 @@ public class PatientController {
     @GetMapping("/{id}")
     @Operation(summary = "Get patient by ID")
     public ResponseEntity<Patient> getPatientById(@PathVariable Long id) {
-        Optional<Patient> oPatient = patientService.getPatientById(id);
-        if (oPatient.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(oPatient.get());
+        Optional<Patient> patient = patientService.getPatientById(id);
+        return patient.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/dni/{dni}")
     @Operation(summary = "Get patient by DNI")
     public ResponseEntity<Patient> getPatientByDni(@PathVariable String dni) {
-        Optional<Patient> oPatient = patientService.getPatientByDni(dni);
-        if (oPatient.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-         return ResponseEntity.ok(oPatient.get());
+        Optional<Patient> patient = patientService.getPatientByDni(new Dni(dni));
+        return patient.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
     @Operation(summary = "Create new patient")
-    public ResponseEntity<Patient> createPatient(@RequestBody Patient patient) {
-        Patient created = patientService.createPatient(patient);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    public ResponseEntity<Patient> createPatient(@RequestBody CreatePatientCommand command) {
+        Patient created = patientService.createPatient(command);
+        return ResponseEntity.status(201).body(created);
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Update patient by ID")
     public ResponseEntity<Patient> updatePatient(@PathVariable Long id, @RequestBody Patient patient) {
-        Optional<Patient> oPatient = patientService.getPatientById(id);
-        if (oPatient.isEmpty()) {
+        try {
+            Patient updated = patientService.updatePatient(id, patient);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(patientService.updatePatient(id, patient));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete patient by ID")
     public ResponseEntity<Void> deletePatient(@PathVariable Long id) {
-        Optional<Patient> oPatient = patientService.getPatientById(id);
-        if (oPatient.isEmpty()) {
+        try {
+            patientService.deletePatient(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
-        patientService.deletePatient(id);
-        return ResponseEntity.noContent().build();
     }
 }
