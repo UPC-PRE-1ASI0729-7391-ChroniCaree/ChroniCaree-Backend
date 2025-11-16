@@ -4,10 +4,9 @@
  */
 package com.example.symptoms.domain.commands;
 
- import com.example.symptoms.domain.valueobject.PatientId;
-
+ 
 public record CreateSymptomCommand(
-        PatientId patientId,
+        Long patientId,
         Double glucose,
         String bloodPressure,
         Integer heartRate,

@@ -5,6 +5,7 @@
 package com.example.symptoms.domain.repository;
 
 import com.example.symptoms.domain.aggregate.Symptom;
+import com.example.patients.domain.aggregates.Patient;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,7 +15,7 @@ public interface SymptomRepository {
 
     Optional<Symptom> findById(Long id);
 
-    List<Symptom> findByPatientId(Long patientId);
+    List<Symptom> findByPatient(Patient patient);
 
     Symptom save(Symptom symptom);
 

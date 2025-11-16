@@ -12,7 +12,6 @@ import com.example.symptoms.domain.valueobject.PatientId;
  */
 public record UpdateSymptomCommand(
         Long symptomId,
-        PatientId patientId,
         Double glucose,
         String bloodPressure,
         Integer heartRate,
@@ -22,5 +21,4 @@ public record UpdateSymptomCommand(
         Integer pain,
         Integer dizziness,
         String notes
-        ) {
-}
+) {}

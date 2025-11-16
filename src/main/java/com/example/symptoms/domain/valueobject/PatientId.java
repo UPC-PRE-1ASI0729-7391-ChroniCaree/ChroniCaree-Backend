@@ -15,9 +15,11 @@ import java.io.Serializable;
 @Getter
 @Embeddable
 public class PatientId implements Serializable {
+
     private Long value;
 
-    public PatientId() { }
+    public PatientId() {
+    }
 
     public PatientId(Long value) {
         if (value == null || value <= 0) {

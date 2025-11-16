@@ -1,34 +1,29 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.example.symptoms.domain.aggregate;
 
+import com.example.patients.domain.aggregates.Patient;
 import com.example.symptoms.domain.commands.CreateSymptomCommand;
 import com.example.symptoms.domain.commands.UpdateSymptomCommand;
-import com.example.symptoms.domain.valueobject.PatientId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 
-/**
- * Symptom aggregate root
- *
- * @summary Represents the symptoms of a patient.
- */
 @Getter
 @Entity
+@Table(name = "symptoms")
 public class Symptom {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private PatientId patientId;
+    /**
+     * Ahora Symptom pertenece a un Patient
+     */
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "patient_id", nullable = false)
+    private Patient patient;
+
     private Double glucose;
     private String bloodPressure;
     private Integer heartRate;
@@ -47,8 +42,9 @@ public class Symptom {
         this.isEdited = false;
     }
 
-    public Symptom(CreateSymptomCommand command) {
-        this.patientId = command.patientId();
+    public Symptom(CreateSymptomCommand command, Patient patient) {
+        this.patient = patient;
+
         this.glucose = command.glucose();
         this.bloodPressure = command.bloodPressure();
         this.heartRate = command.heartRate();
@@ -58,6 +54,7 @@ public class Symptom {
         this.pain = command.pain();
         this.dizziness = command.dizziness();
         this.notes = command.notes();
+
         this.timestamp = LocalDateTime.now();
         this.isEdited = false;
     }
@@ -72,6 +69,7 @@ public class Symptom {
         this.pain = command.pain();
         this.dizziness = command.dizziness();
         this.notes = command.notes();
+
         this.isEdited = true;
         this.editedAt = LocalDateTime.now();
     }

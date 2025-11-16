@@ -4,6 +4,8 @@
  */
 package com.example.symptoms.application.services;
 
+import com.example.patients.domain.aggregates.Patient;
+import com.example.patients.domain.repository.PatientRepository;
 import com.example.symptoms.domain.aggregate.Symptom;
 import com.example.symptoms.domain.commands.CreateSymptomCommand;
 import com.example.symptoms.domain.commands.UpdateSymptomCommand;
@@ -20,9 +22,11 @@ import java.util.Optional;
 public class SymptomService {
 
     private final JpaSymptomRepository repository;
+    private final PatientRepository patientRepository;
 
-    public SymptomService(JpaSymptomRepository repository) {
-        this.repository = repository;
+    public SymptomService(JpaSymptomRepository symptomRepository, PatientRepository patientRepository) {
+        this.repository = symptomRepository;
+        this.patientRepository = patientRepository;
     }
 
     public List<Symptom> getAllSymptoms() {
@@ -34,11 +38,18 @@ public class SymptomService {
     }
 
     public List<Symptom> getSymptomsByPatientId(Long patientId) {
-        return repository.findByPatientId(new PatientId(patientId));
+        Patient patient = patientRepository.findById(patientId)
+                .orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+        return repository.findByPatient(patient);
     }
 
     public Symptom createSymptom(CreateSymptomCommand command) {
-        Symptom symptom = new Symptom(command);
+
+        Patient patient = patientRepository.findById(command.patientId())
+                .orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+
+        Symptom symptom = new Symptom(command, patient);
+
         return repository.save(symptom);
     }
 
