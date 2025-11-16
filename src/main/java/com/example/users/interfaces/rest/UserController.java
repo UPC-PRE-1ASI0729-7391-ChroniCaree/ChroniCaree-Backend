@@ -5,24 +5,17 @@
 package com.example.users.interfaces.rest;
 
 import com.example.users.application.services.UserService;
-import com.example.users.domain.model.User;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import com.example.users.domain.aggregates.User;
+import com.example.users.domain.commands.RegisterUserCommand;
+import com.example.users.domain.commands.UpdateUserCommand;
+import com.example.users.domain.commands.VerifyUserCommand;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/users")
-@Tag(name = "Users", description = "User management endpoints")
 public class UserController {
 
     private final UserService service;
@@ -32,44 +25,35 @@ public class UserController {
     }
 
     @GetMapping
-    @Operation(summary = "Get all users")
     public List<User> getAll() {
         return service.getAll();
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get user by ID")
     public ResponseEntity<User> getById(@PathVariable Long id) {
-        Optional<User> oUser = service.getById(id);
-        if (oUser.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(oUser.get());
+        return service.getById(id).map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    @Operation(summary = "Create a new user")
-    public ResponseEntity<User> create(@RequestBody User user) {
-        return ResponseEntity.ok(service.create(user));
+    public ResponseEntity<User> register(@Valid @RequestBody RegisterUserCommand cmd) {
+        User created = service.register(cmd);
+        return ResponseEntity.ok(created);
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update an existing user")
-    public ResponseEntity<User> update(@PathVariable Long id, @RequestBody User user) {
-        Optional<User> oUser = service.getById(id);
-        if (oUser.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(service.update(id, user));
+    public ResponseEntity<User> update(@PathVariable Long id, @Valid @RequestBody UpdateUserCommand cmd) {
+        UpdateUserCommand withId = new UpdateUserCommand(id, cmd.name(), cmd.role());
+        return ResponseEntity.ok(service.update(withId));
+    }
+
+    @PostMapping("/{id}/verify")
+    public ResponseEntity<Void> verify(@PathVariable Long id) {
+        service.verify(new VerifyUserCommand(id));
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete a user by ID")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        Optional<User> oUser = service.getById(id);
-        if (oUser.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

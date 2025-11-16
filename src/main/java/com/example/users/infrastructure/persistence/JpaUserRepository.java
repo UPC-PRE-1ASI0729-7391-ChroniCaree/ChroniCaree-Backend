@@ -4,17 +4,14 @@
  */
 package com.example.users.infrastructure.persistence;
 
-import com.example.users.domain.model.User;
-import com.example.users.domain.repository.UserRepository;
+import com.example.users.domain.aggregates.User;
+import com.example.users.domain.valueobjects.Email;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
- 
 @Repository
-public interface JpaUserRepository extends UserRepository, JpaRepository<User, Long> {
+public interface JpaUserRepository extends JpaRepository<User, Long> {
 
-    @Override
-    Optional<User> findByEmail(String email);
-    
+    Optional<User> findByEmail(Email email);
 }

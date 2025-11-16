@@ -3,8 +3,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Interface.java to edit this template
  */
 package com.example.users.domain.repository;
-
-import com.example.users.domain.model.User;
+ 
+import com.example.users.domain.aggregates.User;
+import com.example.users.domain.valueobjects.Email;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,7 +14,7 @@ public interface UserRepository {
 
     Optional<User> findById(Long id);
 
-    Optional<User> findByEmail(String email);
+    Optional<User> findByEmail(Email email);
 
     List<User> findAll();
 
