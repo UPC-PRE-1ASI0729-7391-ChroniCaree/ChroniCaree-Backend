@@ -1,13 +1,18 @@
 package com.chronicare.platform.iam.application.internal.commandservices;
 
+import com.chronicare.platform.iam.application.internal.outboundservices.hashing.HashingService;
+import com.chronicare.platform.iam.application.internal.outboundservices.tokens.TokenService;
 import com.chronicare.platform.iam.domain.model.aggregates.User;
 import com.chronicare.platform.iam.domain.model.commands.RegisterUserCommand;
+import com.chronicare.platform.iam.domain.model.commands.SignInCommand;
 import com.chronicare.platform.iam.domain.model.commands.UpdateUserCommand;
 import com.chronicare.platform.iam.domain.model.repositories.UserRepository;
 import com.chronicare.platform.iam.domain.services.UserCommandService;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 /**
@@ -16,11 +21,14 @@ import java.util.Optional;
  */
 @Service
 public class UserCommandServiceImpl implements UserCommandService {
-
     private final UserRepository userRepository;
+    private final HashingService hashingService;
+    private final TokenService tokenService;
 
-    public UserCommandServiceImpl(UserRepository userRepository) {
+    public UserCommandServiceImpl(UserRepository userRepository, HashingService hashingService, TokenService tokenService) {
         this.userRepository = userRepository;
+        this.hashingService = hashingService;
+        this.tokenService = tokenService;
     }
 
     @Override
@@ -31,10 +39,29 @@ public class UserCommandServiceImpl implements UserCommandService {
             throw new IllegalArgumentException("Email already exists: " + command.email());
         }
 
-        // TODO: Hash password before saving (use BCryptPasswordEncoder in production)
-        var user = new User(command);
+        var user = new User(
+                command.email(),
+                hashingService.encode(command.password()),
+                command.name(),
+                command.role(),
+                command.tenantId()
+        );
         var savedUser = userRepository.save(user);
         return Optional.of(savedUser);
+    }
+
+    @Override
+    @Transactional
+    public Optional<ImmutablePair<User, String>> handle(SignInCommand command) {
+        var user = userRepository.findByEmail_Address(command.username());
+        if (user.isEmpty()) {
+            throw new RuntimeException("User not found");
+        }
+        if (!hashingService.matches(command.password(), user.get().getPassword())) {
+            throw new RuntimeException("Invalid password");
+        }
+        var token = tokenService.generateToken(user.get().getUsername());
+        return Optional.of(ImmutablePair.of(user.get(), token));
     }
 
     @Override

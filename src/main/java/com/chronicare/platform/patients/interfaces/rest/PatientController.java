@@ -4,63 +4,65 @@
  */
 package com.chronicare.platform.patients.interfaces.rest;
 
-import com.chronicare.platform.patients.application.services.PatientService;
-import com.chronicare.platform.patients.domain.aggregates.Patient;
+import com.chronicare.platform.patients.domain.model.aggregates.Patient;
 import com.chronicare.platform.patients.domain.commands.CreatePatientCommand;
-import com.chronicare.platform.patients.domain.valueobjects.Dni;
+import com.chronicare.platform.patients.domain.commands.DeletePatientCommand;
+import com.chronicare.platform.patients.domain.commands.UpdatePatientCommand;
+import com.chronicare.platform.patients.domain.queries.GetAllPatientsQuery;
+import com.chronicare.platform.patients.domain.queries.GetPatientByIdQuery;
+import com.chronicare.platform.patients.domain.services.PatientCommandService;
+import com.chronicare.platform.patients.domain.services.PatientQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/patients")
 @Tag(name = "Patients", description = "Patient management API")
 public class PatientController {
 
-    private final PatientService patientService;
+    private final PatientCommandService patientCommandService;
+    private final PatientQueryService patientQueryService;
 
-    public PatientController(PatientService patientService) {
-        this.patientService = patientService;
+    public PatientController(PatientCommandService patientCommandService, PatientQueryService patientQueryService) {
+        this.patientCommandService = patientCommandService;
+        this.patientQueryService = patientQueryService;
     }
 
     @GetMapping
     @Operation(summary = "List all patients")
     public ResponseEntity<List<Patient>> getAllPatients() {
-        return ResponseEntity.ok(patientService.getAllPatients());
+        return ResponseEntity.ok(patientQueryService.handle(new GetAllPatientsQuery()));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get patient by ID")
     public ResponseEntity<Patient> getPatientById(@PathVariable Long id) {
-        Optional<Patient> patient = patientService.getPatientById(id);
-        return patient.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/dni/{dni}")
-    @Operation(summary = "Get patient by DNI")
-    public ResponseEntity<Patient> getPatientByDni(@PathVariable String dni) {
-        Optional<Patient> patient = patientService.getPatientByDni(new Dni(dni));
-        return patient.map(ResponseEntity::ok)
+        return patientQueryService.handle(new GetPatientByIdQuery(id))
+                .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
     @Operation(summary = "Create new patient")
     public ResponseEntity<Patient> createPatient(@RequestBody CreatePatientCommand command) {
-        Patient created = patientService.createPatient(command);
+        Patient created = patientCommandService.handle(command);
         return ResponseEntity.status(201).body(created);
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Update patient by ID")
-    public ResponseEntity<Patient> updatePatient(@PathVariable Long id, @RequestBody Patient patient) {
+    public ResponseEntity<Patient> updatePatient(@PathVariable Long id, @RequestBody UpdatePatientCommand command) {
+        // Ensure ID in command matches path variable if needed, or just pass command
+        // Assuming command has ID
+        if (!id.equals(command.patientId())) {
+             return ResponseEntity.badRequest().build();
+        }
         try {
-            Patient updated = patientService.updatePatient(id, patient);
+            Patient updated = patientCommandService.handle(command);
             return ResponseEntity.ok(updated);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
@@ -71,7 +73,7 @@ public class PatientController {
     @Operation(summary = "Delete patient by ID")
     public ResponseEntity<Void> deletePatient(@PathVariable Long id) {
         try {
-            patientService.deletePatient(id);
+            patientCommandService.handle(new DeletePatientCommand(id));
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();

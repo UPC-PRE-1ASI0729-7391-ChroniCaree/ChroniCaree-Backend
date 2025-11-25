@@ -2,7 +2,9 @@ package com.chronicare.platform.iam.domain.services;
 
 import com.chronicare.platform.iam.domain.model.aggregates.User;
 import com.chronicare.platform.iam.domain.model.commands.RegisterUserCommand;
+import com.chronicare.platform.iam.domain.model.commands.SignInCommand;
 import com.chronicare.platform.iam.domain.model.commands.UpdateUserCommand;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.Optional;
 
@@ -31,4 +33,9 @@ public interface UserCommandService {
      * Delete user by ID
      */
     void deleteUser(Long userId);
+
+    /**
+     * Sign in user
+     */
+    Optional<ImmutablePair<User, String>> handle(SignInCommand command);
 }

@@ -4,7 +4,7 @@
  */
 package com.chronicare.platform.symptoms.application.services;
 
-import com.chronicare.platform.patients.domain.aggregates.Patient;
+import com.chronicare.platform.patients.domain.model.aggregates.Patient;
 import com.chronicare.platform.patients.domain.repository.PatientRepository;
 import com.chronicare.platform.symptoms.domain.aggregate.Symptom;
 import com.chronicare.platform.symptoms.domain.commands.CreateSymptomCommand;

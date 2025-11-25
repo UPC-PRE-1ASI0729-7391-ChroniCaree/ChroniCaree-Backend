@@ -4,7 +4,7 @@
  */
 package com.chronicare.platform.patients.infrastructure.persistence;
 
-import com.chronicare.platform.patients.domain.aggregates.Patient;
+import com.chronicare.platform.patients.domain.model.aggregates.Patient;
 import com.chronicare.platform.patients.domain.valueobjects.Dni;
 import com.chronicare.platform.patients.domain.repository.PatientRepository;
 import org.springframework.data.jpa.repository.JpaRepository;

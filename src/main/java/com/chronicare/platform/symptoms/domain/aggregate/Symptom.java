@@ -1,6 +1,6 @@
 package com.chronicare.platform.symptoms.domain.aggregate;
 
-import com.chronicare.platform.patients.domain.aggregates.Patient;
+import com.chronicare.platform.patients.domain.model.aggregates.Patient;
 import com.chronicare.platform.symptoms.domain.commands.CreateSymptomCommand;
 import com.chronicare.platform.symptoms.domain.commands.UpdateSymptomCommand;
 import jakarta.persistence.*;

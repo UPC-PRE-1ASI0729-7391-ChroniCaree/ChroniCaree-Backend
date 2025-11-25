@@ -5,7 +5,7 @@
 package com.chronicare.platform.symptoms.domain.repository;
 
 import com.chronicare.platform.symptoms.domain.aggregate.Symptom;
-import com.chronicare.platform.patients.domain.aggregates.Patient;
+import com.chronicare.platform.patients.domain.model.aggregates.Patient;
 import java.util.List;
 import java.util.Optional;
 

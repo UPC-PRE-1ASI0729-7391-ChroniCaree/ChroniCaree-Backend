@@ -50,26 +50,23 @@ public class User extends AuditableAbstractAggregateRoot<User> {
     @Column(name = "two_factor_enabled", nullable = false)
     private Boolean twoFactorEnabled = false;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
     protected User() {
         // Required by JPA
     }
 
-    /**
-     * Constructor from RegisterUserCommand
-     */
-    public User(RegisterUserCommand command) {
+    public User(String email, String password, String name, Roles role, Long tenantId) {
         this();
-        this.email = new EmailAddress(command.email());
-        this.password = command.password(); // Should be hashed in service
-        this.name = command.name();
-        this.role = command.role();
-        this.tenantId = command.tenantId();
+        this.email = new EmailAddress(email);
+        this.password = password;
+        this.name = name;
+        this.role = role;
+        this.tenantId = tenantId;
         this.isVerified = false;
         this.twoFactorEnabled = false;
-        this.createdAt = LocalDateTime.now();
+    }
+
+    public String getUsername() {
+        return this.email.address();
     }
 
     /**

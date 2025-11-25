@@ -4,21 +4,15 @@
  */
 package com.chronicare.platform.patients.domain.repository;
 
-import com.chronicare.platform.patients.domain.aggregates.Patient;
+import com.chronicare.platform.patients.domain.model.aggregates.Patient;
 import com.chronicare.platform.patients.domain.valueobjects.Dni;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
-public interface PatientRepository {
-
-    List<Patient> findAll();
-
-    Optional<Patient> findById(Long id);
-
+@Repository
+public interface PatientRepository extends JpaRepository<Patient, Long> {
     Optional<Patient> findByDni(Dni dni);
-
-    Patient save(Patient patient);
-
-    void deleteById(Long id);
+    boolean existsByDni(Dni dni);
 }
