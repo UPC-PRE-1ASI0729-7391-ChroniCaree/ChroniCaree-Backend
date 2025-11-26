@@ -4,8 +4,8 @@
  */
 package com.chronicare.platform.medication.domain.repository;
 
-import com.chronicare.platform.medication.domain.model.Medication;
-import com.chronicare.platform.medication.domain.model.MedicationStatus;
+import com.chronicare.platform.medication.domain.aggregate.Medication;
+import com.chronicare.platform.medication.domain.valueobject.MedicationStatusVO;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,9 +15,9 @@ public interface MedicationRepository {
 
     Optional<Medication> findById(Long id);
 
-    List<Medication> findByPatientId(String patientId);
+    List<Medication> findByPatientId(Long patientId);
 
-    List<Medication> findByStatus(MedicationStatus status);
+    List<Medication> findByStatus(MedicationStatusVO status);
 
     Medication save(Medication medication);
 
