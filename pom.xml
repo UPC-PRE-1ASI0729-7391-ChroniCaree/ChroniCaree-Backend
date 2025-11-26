@@ -116,6 +116,9 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<mainClass>com.chronicare.platform.ChronicareeBackendApplication</mainClass>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>net.revelc.code.formatter</groupId>

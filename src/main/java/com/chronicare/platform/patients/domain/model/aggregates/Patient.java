@@ -11,6 +11,7 @@ import lombok.Setter;
 import java.time.LocalDate;
 
 @Entity
+@Table(name = "patients")
 @Getter
 @Setter
 public class Patient extends AuditableAbstractAggregateRoot<Patient> {
