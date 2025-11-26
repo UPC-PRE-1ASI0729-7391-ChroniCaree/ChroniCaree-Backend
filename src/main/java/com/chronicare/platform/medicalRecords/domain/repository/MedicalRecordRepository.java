@@ -4,7 +4,7 @@
  */
 package com.chronicare.platform.medicalRecords.domain.repository;
 
-import com.chronicare.platform.medicalRecords.domain.model.MedicalRecord;
+import com.chronicare.platform.medicalRecords.domain.model.aggregates.MedicalRecord;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,4 +22,6 @@ public interface MedicalRecordRepository {
     MedicalRecord save(MedicalRecord medicalRecord);
 
     void deleteById(Long id);
+
+    boolean existsById(Long id);
 }
