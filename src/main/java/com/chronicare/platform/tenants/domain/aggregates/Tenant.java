@@ -6,10 +6,9 @@ package com.chronicare.platform.tenants.domain.aggregates;
 
 import com.chronicare.platform.tenants.domain.valueobjects.TenantName;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import lombok.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "tenants", uniqueConstraints = {
@@ -28,6 +27,37 @@ public class Tenant {
 
     @Column(nullable = false, length = 255)
     private String name;
+
+    @Column(name = "admin_user_id")
+    private Long adminUserId;
+
+    @Column(length = 255)
+    private String email;
+
+    @Column(length = 255)
+    private String address;
+
+    @Column(length = 50)
+    private String phone;
+
+    @Column(length = 50)
+    private String status;
+
+    @Column(name = "subscription_id")
+    private Long subscriptionId;
+
+    @Column(name = "registration_date")
+    private LocalDateTime registrationDate;
+
+    // Settings fields
+    @Column(name = "allow_independent_doctors")
+    private Boolean allowIndependentDoctors;
+
+    @Column(name = "require_patient_approval")
+    private Boolean requirePatientApproval;
+
+    @Column(name = "max_doctors")
+    private Integer maxDoctors;
 
     public Tenant(Long id, TenantName name) {
         this.id = id;

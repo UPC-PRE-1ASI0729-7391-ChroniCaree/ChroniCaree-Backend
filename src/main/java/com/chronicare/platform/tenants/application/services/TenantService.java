@@ -42,7 +42,21 @@ public class TenantService {
         if (repository.findByName(command.name().value()).isPresent()) {
             throw new IllegalArgumentException("Tenant name already exists");
         }
-        Tenant tenant = new Tenant(command.name());
+        
+        Tenant tenant = Tenant.builder()
+                .name(command.name().value())
+                .adminUserId(command.adminUserId())
+                .email(command.email())
+                .address(command.address())
+                .phone(command.phone())
+                .status(command.status())
+                .subscriptionId(command.subscriptionId())
+                .registrationDate(command.registrationDate())
+                .allowIndependentDoctors(command.allowIndependentDoctors())
+                .requirePatientApproval(command.requirePatientApproval())
+                .maxDoctors(command.maxDoctors())
+                .build();
+                
         Tenant saved = repository.save(tenant);
 
         // Publicar evento

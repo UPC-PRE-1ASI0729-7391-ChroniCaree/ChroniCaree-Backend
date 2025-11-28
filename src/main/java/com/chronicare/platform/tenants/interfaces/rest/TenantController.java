@@ -32,7 +32,23 @@ public class TenantController {
 
     record TenantResponse(Long id, String name) { }
 
-    record CreateTenantRequest(String name) {
+    record TenantSettings(
+        Boolean allowIndependentDoctors,
+        Boolean requirePatientApproval,
+        Integer maxDoctors
+    ) {}
+
+    record CreateTenantRequest(
+        Long adminUserId,
+        String name,
+        String email,
+        String address,
+        String phone,
+        String status,
+        Long subscriptionId,
+        java.time.LocalDateTime registrationDate,
+        TenantSettings settings
+    ) {
         public CreateTenantRequest {
             if (name == null || name.isBlank()) {
                 throw new IllegalArgumentException("name cannot be null or blank");
@@ -69,7 +85,19 @@ public class TenantController {
     @PostMapping
     @Operation(summary = "Create new tenant")
     public ResponseEntity<TenantResponse> createTenant(@RequestBody CreateTenantRequest req) {
-        CreateTenantCommand cmd = new CreateTenantCommand(new TenantName(req.name()));
+        CreateTenantCommand cmd = new CreateTenantCommand(
+            req.adminUserId(),
+            new TenantName(req.name()),
+            req.email(),
+            req.address(),
+            req.phone(),
+            req.status(),
+            req.subscriptionId(),
+            req.registrationDate(),
+            req.settings() != null ? req.settings().allowIndependentDoctors() : null,
+            req.settings() != null ? req.settings().requirePatientApproval() : null,
+            req.settings() != null ? req.settings().maxDoctors() : null
+        );
         Tenant created = tenantService.createTenant(cmd);
         TenantResponse resp = new TenantResponse(created.getId(), created.getName().value());
         return ResponseEntity.status(HttpStatus.CREATED).body(resp);
