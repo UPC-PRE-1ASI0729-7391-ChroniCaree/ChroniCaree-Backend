@@ -8,11 +8,13 @@ import  com.chronicare.platform.patients.domain.valueobjects.Dni;
 public record UpdatePatientCommand(Long patientId,
         String firstName,
         String lastName,
+        String email,
         Dni dni,
         String birthDate,
         String gender,
         String phone,
         String address,
+        String photoUrl,
         Double weight,
         Double height) {
 

@@ -30,7 +30,18 @@ public class TenantController {
         this.tenantService = tenantService;
     }
 
-    record TenantResponse(Long id, String name) { }
+    record TenantResponse(
+        Long id, 
+        String name,
+        Long adminUserId,
+        String email,
+        String address,
+        String phone,
+        String status,
+        Long subscriptionId,
+        String registrationDate,
+        TenantSettings settings
+    ) { }
 
     record TenantSettings(
         Boolean allowIndependentDoctors,
@@ -46,7 +57,7 @@ public class TenantController {
         String phone,
         String status,
         Long subscriptionId,
-        java.time.LocalDateTime registrationDate,
+        String registrationDate,
         TenantSettings settings
     ) {
         public CreateTenantRequest {
@@ -64,11 +75,30 @@ public class TenantController {
         }
     }
 
+    private TenantResponse toResponse(Tenant t) {
+        return new TenantResponse(
+            t.getId(),
+            t.getName().value(),
+            t.getAdminUserId(),
+            t.getEmail(),
+            t.getAddress(),
+            t.getPhone(),
+            t.getStatus(),
+            t.getSubscriptionId(),
+            t.getRegistrationDate() != null ? t.getRegistrationDate().toString() : null,
+            new TenantSettings(
+                t.getAllowIndependentDoctors(),
+                t.getRequirePatientApproval(),
+                t.getMaxDoctors()
+            )
+        );
+    }
+
     @GetMapping
     @Operation(summary = "List all tenants")
     public ResponseEntity<List<TenantResponse>> getAllTenants() {
         List<TenantResponse> resp = tenantService.getAllTenants().stream()
-                .map(t -> new TenantResponse(t.getId(), t.getName().value()))
+                .map(this::toResponse)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(resp);
     }
@@ -77,7 +107,7 @@ public class TenantController {
     @Operation(summary = "Get tenant by ID")
     public ResponseEntity<TenantResponse> getTenantById(@PathVariable Long id) {
         return tenantService.getTenantById(id)
-                .map(t -> new TenantResponse(t.getId(), t.getName().value()))
+                .map(this::toResponse)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -85,6 +115,23 @@ public class TenantController {
     @PostMapping
     @Operation(summary = "Create new tenant")
     public ResponseEntity<TenantResponse> createTenant(@RequestBody CreateTenantRequest req) {
+        java.time.LocalDateTime regDate = null;
+        if (req.registrationDate() != null) {
+            // Handle ISO format with Z (UTC) by parsing to Instant then converting to LocalDateTime
+            try {
+                regDate = java.time.ZonedDateTime.parse(req.registrationDate()).toLocalDateTime();
+            } catch (Exception e) {
+                // Fallback or try LocalDateTime parse
+                try {
+                    regDate = java.time.LocalDateTime.parse(req.registrationDate());
+                } catch (Exception ex) {
+                    regDate = java.time.LocalDateTime.now();
+                }
+            }
+        } else {
+            regDate = java.time.LocalDateTime.now();
+        }
+
         CreateTenantCommand cmd = new CreateTenantCommand(
             req.adminUserId(),
             new TenantName(req.name()),
@@ -93,14 +140,13 @@ public class TenantController {
             req.phone(),
             req.status(),
             req.subscriptionId(),
-            req.registrationDate(),
+            regDate,
             req.settings() != null ? req.settings().allowIndependentDoctors() : null,
             req.settings() != null ? req.settings().requirePatientApproval() : null,
             req.settings() != null ? req.settings().maxDoctors() : null
         );
         Tenant created = tenantService.createTenant(cmd);
-        TenantResponse resp = new TenantResponse(created.getId(), created.getName().value());
-        return ResponseEntity.status(HttpStatus.CREATED).body(resp);
+        return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(created));
     }
 
     @PutMapping("/{id}")
@@ -108,8 +154,7 @@ public class TenantController {
     public ResponseEntity<TenantResponse> updateTenant(@PathVariable Long id, @RequestBody UpdateTenantRequest req) {
         UpdateTenantCommand cmd = new UpdateTenantCommand(id, new TenantName(req.name()));
         Tenant updated = tenantService.updateTenant(cmd);
-        TenantResponse resp = new TenantResponse(updated.getId(), updated.getName().value());
-        return ResponseEntity.ok(resp);
+        return ResponseEntity.ok(toResponse(updated));
     }
 
     @DeleteMapping("/{id}")

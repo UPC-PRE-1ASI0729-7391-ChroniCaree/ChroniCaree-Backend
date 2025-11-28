@@ -83,9 +83,24 @@ public class PatientController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    record CreatePatientRequest(
+        Long userId,
+        String firstName,
+        String lastName,
+        String email,
+        String dni,
+        String birthDate,
+        String gender,
+        String phone,
+        String address,
+        String photoUrl,
+        Double weight,
+        Double height
+    ) {}
+
     /**
      * Create a new patient
-     * @param command The {@link CreatePatientCommand} containing patient data
+     * @param request The {@link CreatePatientRequest} containing patient data
      * @return The created patient with 201 status
      */
     @PostMapping
@@ -95,15 +110,43 @@ public class PatientController {
             @ApiResponse(responseCode = "400", description = "Bad request - Invalid input data"),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-    public ResponseEntity<Patient> createPatient(@RequestBody CreatePatientCommand command) {
+    public ResponseEntity<Patient> createPatient(@RequestBody CreatePatientRequest request) {
+        CreatePatientCommand command = new CreatePatientCommand(
+            request.userId(),
+            request.firstName(),
+            request.lastName(),
+            request.email(),
+            new com.chronicare.platform.patients.domain.valueobjects.Dni(request.dni()),
+            request.birthDate(),
+            request.gender(),
+            request.phone(),
+            request.address(),
+            request.photoUrl(),
+            request.weight(),
+            request.height()
+        );
         Patient created = patientCommandService.handle(command);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
+    record UpdatePatientRequest(
+        String firstName,
+        String lastName,
+        String email,
+        String dni,
+        String birthDate,
+        String gender,
+        String phone,
+        String address,
+        String photoUrl,
+        Double weight,
+        Double height
+    ) {}
+
     /**
      * Update patient by ID
      * @param id The patient ID
-     * @param command The {@link UpdatePatientCommand} containing updated patient data
+     * @param request The {@link UpdatePatientRequest} containing updated patient data
      * @return The updated patient, or a 404 response if not found
      */
     @PutMapping("/{id}")
@@ -114,10 +157,21 @@ public class PatientController {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "Patient not found")
     })
-    public ResponseEntity<Patient> updatePatient(@PathVariable Long id, @RequestBody UpdatePatientCommand command) {
-        if (!id.equals(command.patientId())) {
-            return ResponseEntity.badRequest().build();
-        }
+    public ResponseEntity<Patient> updatePatient(@PathVariable Long id, @RequestBody UpdatePatientRequest request) {
+        UpdatePatientCommand command = new UpdatePatientCommand(
+            id,
+            request.firstName(),
+            request.lastName(),
+            request.email(),
+            new com.chronicare.platform.patients.domain.valueobjects.Dni(request.dni()),
+            request.birthDate(),
+            request.gender(),
+            request.phone(),
+            request.address(),
+            request.photoUrl(),
+            request.weight(),
+            request.height()
+        );
         try {
             Patient updated = patientCommandService.handle(command);
             return ResponseEntity.ok(updated);

@@ -36,7 +36,6 @@ public class User extends AuditableAbstractAggregateRoot<User> {
     @Column(nullable = false)
     private String name;
 
-    @Enumerated(EnumType.STRING)
     @NotNull(message = "Role is required")
     @Column(nullable = false)
     private Roles role;
