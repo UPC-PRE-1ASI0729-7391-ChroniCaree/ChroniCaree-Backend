@@ -1,17 +1,14 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Interface.java to edit this template
- */
-package com.chronicare.platform.medicalRecords.infrastructure.persistence;
+package com.chronicare.platform.medicalRecords.infrastructure.persistence.jpa.repositories;
 
-import com.chronicare.platform.medicalRecords.domain.model.MedicalRecord;
+import com.chronicare.platform.medicalRecords.domain.model.aggregates.MedicalRecord;
 import com.chronicare.platform.medicalRecords.domain.repository.MedicalRecordRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
 
 /**
- * Implementación JPA del repositorio de registros médicos.
+ * JPA implementation of the medical record repository
  */
 @Repository
 public interface JpaMedicalRecordRepository extends JpaRepository<MedicalRecord, Long>, MedicalRecordRepository {
@@ -22,3 +19,4 @@ public interface JpaMedicalRecordRepository extends JpaRepository<MedicalRecord,
     @Override
     List<MedicalRecord> findByDoctorId(Long doctorId);
 }
+
