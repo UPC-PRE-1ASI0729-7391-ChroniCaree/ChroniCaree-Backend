@@ -1,4 +1,4 @@
 package com.chronicare.platform.iam.interfaces.rest.resources;
 
-public record AuthenticatedUserResource(Long id, String username, String token) {
+public record AuthenticatedUserResource(Long id, String username, String token, String refreshToken) {
 }

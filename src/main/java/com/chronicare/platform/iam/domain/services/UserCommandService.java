@@ -4,7 +4,7 @@ import com.chronicare.platform.iam.domain.model.aggregates.User;
 import com.chronicare.platform.iam.domain.model.commands.RegisterUserCommand;
 import com.chronicare.platform.iam.domain.model.commands.SignInCommand;
 import com.chronicare.platform.iam.domain.model.commands.UpdateUserCommand;
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 
 import java.util.Optional;
 
@@ -37,5 +37,5 @@ public interface UserCommandService {
     /**
      * Sign in user
      */
-    Optional<ImmutablePair<User, String>> handle(SignInCommand command);
+    Optional<ImmutableTriple<User, String, String>> handle(SignInCommand command);
 }

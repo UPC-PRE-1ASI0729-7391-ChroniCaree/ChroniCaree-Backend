@@ -2,13 +2,14 @@ package com.chronicare.platform.iam.application.internal.commandservices;
 
 import com.chronicare.platform.iam.application.internal.outboundservices.hashing.HashingService;
 import com.chronicare.platform.iam.application.internal.outboundservices.tokens.TokenService;
+import com.chronicare.platform.iam.infrastructure.tokens.RefreshTokenService;
 import com.chronicare.platform.iam.domain.model.aggregates.User;
 import com.chronicare.platform.iam.domain.model.commands.RegisterUserCommand;
 import com.chronicare.platform.iam.domain.model.commands.SignInCommand;
 import com.chronicare.platform.iam.domain.model.commands.UpdateUserCommand;
 import com.chronicare.platform.iam.domain.model.repositories.UserRepository;
 import com.chronicare.platform.iam.domain.services.UserCommandService;
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,11 +25,13 @@ public class UserCommandServiceImpl implements UserCommandService {
     private final UserRepository userRepository;
     private final HashingService hashingService;
     private final TokenService tokenService;
+    private final RefreshTokenService refreshTokenService;
 
-    public UserCommandServiceImpl(UserRepository userRepository, HashingService hashingService, TokenService tokenService) {
+    public UserCommandServiceImpl(UserRepository userRepository, HashingService hashingService, TokenService tokenService, RefreshTokenService refreshTokenService) {
         this.userRepository = userRepository;
         this.hashingService = hashingService;
         this.tokenService = tokenService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @Override
@@ -52,7 +55,7 @@ public class UserCommandServiceImpl implements UserCommandService {
 
     @Override
     @Transactional
-    public Optional<ImmutablePair<User, String>> handle(SignInCommand command) {
+    public Optional<ImmutableTriple<User, String, String>> handle(SignInCommand command) {
         var user = userRepository.findByEmail_Address(command.username());
         if (user.isEmpty()) {
             throw new RuntimeException("User not found");
@@ -61,7 +64,8 @@ public class UserCommandServiceImpl implements UserCommandService {
             throw new RuntimeException("Invalid password");
         }
         var token = tokenService.generateToken(user.get().getUsername());
-        return Optional.of(ImmutablePair.of(user.get(), token));
+        var refreshToken = refreshTokenService.createRefreshToken(user.get().getId());
+        return Optional.of(ImmutableTriple.of(user.get(), token, refreshToken.getToken()));
     }
 
     @Override
