@@ -16,7 +16,6 @@ import org.springframework.util.StringUtils;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.function.Function;
 
 @Service
 public class JwtTokenService implements TokenService {
@@ -40,10 +39,10 @@ public class JwtTokenService implements TokenService {
         Date now = new Date();
         Date expiration = DateUtils.addDays(now, expirationDays);
         return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(now)
-                .setExpiration(expiration)
-                .signWith(key, SignatureAlgorithm.HS256)
+                .subject(username)
+                .issuedAt(now)
+                .expiration(expiration)
+                .signWith(key)
                 .compact();
     }
 
@@ -51,7 +50,7 @@ public class JwtTokenService implements TokenService {
     public boolean validateToken(String token) {
         try {
             SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
             return true;
         } catch (SignatureException e) {
             LOGGER.error("Invalid JWT signature: {}", e.getMessage());
@@ -70,7 +69,7 @@ public class JwtTokenService implements TokenService {
     @Override
     public String getUsernameFromToken(String token) {
         SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
+        return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload().getSubject();
     }
 
     public String getBearerTokenFrom(HttpServletRequest token) {
