@@ -1,16 +1,19 @@
-package com.chronicare.platform.symptoms.domain.aggregate;
+package com.chronicare.platform.symptoms.domain.model.aggregates;
 
 import com.chronicare.platform.patients.domain.model.aggregates.Patient;
 import com.chronicare.platform.symptoms.domain.commands.CreateSymptomCommand;
 import com.chronicare.platform.symptoms.domain.commands.UpdateSymptomCommand;
 import jakarta.persistence.*;
-import lombok.Getter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Getter
 @Entity
 @Table(name = "symptoms")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Symptom {
 
     @Id
@@ -37,9 +40,14 @@ public class Symptom {
     private Boolean isEdited;
     private LocalDateTime editedAt;
 
-    public Symptom() {
-        this.timestamp = LocalDateTime.now();
-        this.isEdited = false;
+    @PrePersist
+    public void onCreate() {
+        if (this.timestamp == null) {
+            this.timestamp = LocalDateTime.now();
+        }
+        if (this.isEdited == null) {
+            this.isEdited = false;
+        }
     }
 
     public Symptom(CreateSymptomCommand command, Patient patient) {

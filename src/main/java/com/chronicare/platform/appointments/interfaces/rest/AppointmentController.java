@@ -5,7 +5,7 @@
 package com.chronicare.platform.appointments.interfaces.rest;
 
 import com.chronicare.platform.appointments.application.services.AppointmentService;
-import com.chronicare.platform.appointments.domain.model.Appointment;
+import com.chronicare.platform.appointments.domain.model.aggregates.Appointment;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;

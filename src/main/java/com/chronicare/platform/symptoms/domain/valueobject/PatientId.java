@@ -5,14 +5,12 @@
 package com.chronicare.platform.symptoms.domain.valueobject;
 
 import jakarta.persistence.Embeddable;
-import lombok.Getter;
 
 import java.io.Serializable;
 
 /**
  * Value Object for PatientId
  */
-@Getter
 @Embeddable
 public class PatientId implements Serializable {
 
@@ -26,5 +24,9 @@ public class PatientId implements Serializable {
             throw new IllegalArgumentException("PatientId cannot be null or less than 1");
         }
         this.value = value;
+    }
+
+    public Long getValue() {
+        return value;
     }
 }

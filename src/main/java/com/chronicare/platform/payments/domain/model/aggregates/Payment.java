@@ -5,15 +5,11 @@ import com.chronicare.platform.payments.domain.model.valueobjects.PaymentMethod;
 import com.chronicare.platform.payments.domain.model.valueobjects.PaymentStatus;
 import com.chronicare.platform.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "payments")
-@Getter
-@Setter
 public class Payment extends AuditableAbstractAggregateRoot<Payment> {
 
     @Column(name = "subscription_id", nullable = false)
@@ -58,6 +54,78 @@ public class Payment extends AuditableAbstractAggregateRoot<Payment> {
         this.status = status;
         this.paymentMethod = paymentMethod;
         this.transactionId = transactionId;
+        this.stripePaymentIntentId = stripePaymentIntentId;
+    }
+
+    public Long getSubscriptionId() {
+        return subscriptionId;
+    }
+
+    public void setSubscriptionId(Long subscriptionId) {
+        this.subscriptionId = subscriptionId;
+    }
+
+    public PayerType getPayerType() {
+        return payerType;
+    }
+
+    public void setPayerType(PayerType payerType) {
+        this.payerType = payerType;
+    }
+
+    public Long getPayerId() {
+        return payerId;
+    }
+
+    public void setPayerId(Long payerId) {
+        this.payerId = payerId;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+
+    public PaymentStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PaymentStatus status) {
+        this.status = status;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
+    }
+
+    public String getStripePaymentIntentId() {
+        return stripePaymentIntentId;
+    }
+
+    public void setStripePaymentIntentId(String stripePaymentIntentId) {
         this.stripePaymentIntentId = stripePaymentIntentId;
     }
 }

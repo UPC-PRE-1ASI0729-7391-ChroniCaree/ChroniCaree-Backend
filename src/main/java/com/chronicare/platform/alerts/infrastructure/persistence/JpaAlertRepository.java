@@ -4,7 +4,7 @@
  */
 package com.chronicare.platform.alerts.infrastructure.persistence;
 
-import com.chronicare.platform.alerts.domain.model.Alert;
+import com.chronicare.platform.alerts.domain.model.aggregates.Alert;
 import com.chronicare.platform.alerts.domain.repository.AlertRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

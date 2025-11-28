@@ -2,8 +2,12 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.chronicare.platform.alerts.domain.model;
+package com.chronicare.platform.alerts.domain.model.aggregates;
 
+import com.chronicare.platform.alerts.domain.model.AlertMetaData;
+import com.chronicare.platform.alerts.domain.model.AlertSeverity;
+import com.chronicare.platform.alerts.domain.model.AlertStatus;
+import com.chronicare.platform.alerts.domain.model.AlertType;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;

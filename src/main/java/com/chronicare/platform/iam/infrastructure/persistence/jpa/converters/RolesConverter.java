@@ -23,7 +23,7 @@ public class RolesConverter implements AttributeConverter<Roles, String> {
             return null;
         }
         return Stream.of(Roles.values())
-                .filter(r -> r.getName().equals(name))
+                .filter(r -> r.getName().equalsIgnoreCase(name))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Unknown role: " + name));
     }

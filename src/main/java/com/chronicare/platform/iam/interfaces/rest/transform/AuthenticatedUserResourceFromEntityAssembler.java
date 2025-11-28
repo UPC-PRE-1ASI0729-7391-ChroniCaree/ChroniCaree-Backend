@@ -5,6 +5,11 @@ import com.chronicare.platform.iam.interfaces.rest.resources.AuthenticatedUserRe
 
 public class AuthenticatedUserResourceFromEntityAssembler {
     public static AuthenticatedUserResource toResourceFromEntity(User user, String token, String refreshToken) {
-        return new AuthenticatedUserResource(user.getId(), user.getUsername(), token, refreshToken);
+        var userInfo = new AuthenticatedUserResource.UserInfo(
+            user.getId(), 
+            user.getEmailAddress(), 
+            user.getRole().getName()
+        );
+        return new AuthenticatedUserResource(token, refreshToken, userInfo);
     }
 }

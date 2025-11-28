@@ -4,7 +4,7 @@
  */
 package com.chronicare.platform.alerts.domain.repository;
 
-import com.chronicare.platform.alerts.domain.model.Alert;
+import com.chronicare.platform.alerts.domain.model.aggregates.Alert;
 import java.util.List;
 import java.util.Optional;
 

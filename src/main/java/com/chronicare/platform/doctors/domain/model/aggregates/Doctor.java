@@ -1,4 +1,4 @@
-package com.chronicare.platform.doctors.domain.model;
+package com.chronicare.platform.doctors.domain.model.aggregates;
 
 import jakarta.persistence.*;
 import lombok.*;

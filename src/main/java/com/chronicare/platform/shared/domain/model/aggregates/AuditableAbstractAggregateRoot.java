@@ -1,7 +1,6 @@
 package com.chronicare.platform.shared.domain.model.aggregates;
 
 import jakarta.persistence.*;
-import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.domain.AbstractAggregateRoot;
@@ -17,7 +16,6 @@ import java.util.Date;
  * and adds auditing fields for tracking creation and modification timestamps.
  * It also provides methods for registering domain events.
  */
-@Getter
 @EntityListeners(AuditingEntityListener.class)
 @MappedSuperclass
 public class AuditableAbstractAggregateRoot<T extends AbstractAggregateRoot<T>>
@@ -34,6 +32,18 @@ extends AbstractAggregateRoot<T> {
     @LastModifiedDate
     @Column(nullable = false)
     private Date updatedAt;
+
+    public Long getId() {
+        return id;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
 
     /**
      * Registers a domain event

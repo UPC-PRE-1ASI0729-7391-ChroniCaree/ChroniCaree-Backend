@@ -7,10 +7,7 @@ package com.chronicare.platform.medication.domain.model;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Embeddable
 @Data
@@ -21,5 +18,5 @@ public class MedicationSchedule {
 
     @Enumerated(EnumType.STRING)
     private MedicationFrequency frequency;
-    private String timeOfDay;  
+    private String timeOfDay;
 }

@@ -8,7 +8,6 @@ import com.chronicare.platform.shared.domain.model.aggregates.AuditableAbstractA
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
 
 import java.time.LocalDateTime;
 
@@ -19,7 +18,6 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "users")
-@Getter
 public class User extends AuditableAbstractAggregateRoot<User> {
 
     @Embedded
@@ -134,5 +132,33 @@ public class User extends AuditableAbstractAggregateRoot<User> {
      */
     public String getEmailAddress() {
         return email.address();
+    }
+
+    public EmailAddress getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Roles getRole() {
+        return role;
+    }
+
+    public Long getTenantId() {
+        return tenantId;
+    }
+
+    public Boolean getIsVerified() {
+        return isVerified;
+    }
+
+    public Boolean getTwoFactorEnabled() {
+        return twoFactorEnabled;
     }
 }

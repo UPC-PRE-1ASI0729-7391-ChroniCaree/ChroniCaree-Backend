@@ -5,21 +5,17 @@ import com.chronicare.platform.patients.domain.commands.UpdatePatientCommand;
 import com.chronicare.platform.patients.domain.valueobjects.Dni;
 import com.chronicare.platform.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "patients")
-@Getter
-@Setter
-@Builder
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
+@EqualsAndHashCode(callSuper = false)
 public class Patient extends AuditableAbstractAggregateRoot<Patient> {
 
     @Embedded

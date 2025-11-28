@@ -5,7 +5,7 @@
 package com.chronicare.platform.alerts.interfaces.rest;
 
 import com.chronicare.platform.alerts.application.services.AlertService;
-import com.chronicare.platform.alerts.domain.model.Alert;
+import com.chronicare.platform.alerts.domain.model.aggregates.Alert;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;

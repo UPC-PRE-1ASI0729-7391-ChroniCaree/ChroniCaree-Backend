@@ -1,6 +1,6 @@
 package com.chronicare.platform.doctors.application.services;
 
-import com.chronicare.platform.doctors.domain.model.Doctor;
+import com.chronicare.platform.doctors.domain.model.aggregates.Doctor;
 import com.chronicare.platform.doctors.domain.repository.DoctorRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;

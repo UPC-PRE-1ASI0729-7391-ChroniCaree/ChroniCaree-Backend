@@ -1,6 +1,6 @@
 package com.chronicare.platform.doctors.domain.repository;
 
-import com.chronicare.platform.doctors.domain.model.Doctor;
+import com.chronicare.platform.doctors.domain.model.aggregates.Doctor;
 import java.util.List;
 import java.util.Optional;
 

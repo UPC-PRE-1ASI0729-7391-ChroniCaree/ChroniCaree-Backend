@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 /**
  * User Command Service Implementation
@@ -22,6 +23,7 @@ import java.util.Optional;
  */
 @Service
 public class UserCommandServiceImpl implements UserCommandService {
+    private static final Logger logger = Logger.getLogger(UserCommandServiceImpl.class.getName());
     private final UserRepository userRepository;
     private final HashingService hashingService;
     private final TokenService tokenService;
@@ -37,8 +39,10 @@ public class UserCommandServiceImpl implements UserCommandService {
     @Override
     @Transactional
     public Optional<User> handle(RegisterUserCommand command) {
+        logger.info("Handling RegisterUserCommand for email: " + command.email());
         // Check if email already exists
         if (userRepository.existsByEmail_Address(command.email())) {
+            logger.warning("Email already exists: " + command.email());
             throw new IllegalArgumentException("Email already exists: " + command.email());
         }
 
@@ -50,21 +54,26 @@ public class UserCommandServiceImpl implements UserCommandService {
                 command.tenantId()
         );
         var savedUser = userRepository.save(user);
+        logger.info("User registered successfully with ID: " + savedUser.getId());
         return Optional.of(savedUser);
     }
 
     @Override
     @Transactional
     public Optional<ImmutableTriple<User, String, String>> handle(SignInCommand command) {
+        logger.info("Handling SignInCommand for username: " + command.username());
         var user = userRepository.findByEmail_Address(command.username());
         if (user.isEmpty()) {
-            throw new RuntimeException("User not found");
+            logger.warning("User not found for username: " + command.username());
+            return Optional.empty();
         }
         if (!hashingService.matches(command.password(), user.get().getPassword())) {
-            throw new RuntimeException("Invalid password");
+            logger.warning("Password mismatch for username: " + command.username());
+            return Optional.empty();
         }
         var token = tokenService.generateToken(user.get().getUsername());
         var refreshToken = refreshTokenService.createRefreshToken(user.get().getId());
+        logger.info("User authenticated successfully: " + command.username());
         return Optional.of(ImmutableTriple.of(user.get(), token, refreshToken.getToken()));
     }
 

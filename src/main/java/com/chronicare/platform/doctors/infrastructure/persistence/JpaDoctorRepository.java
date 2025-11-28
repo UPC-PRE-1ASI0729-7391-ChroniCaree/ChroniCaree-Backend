@@ -4,7 +4,7 @@
  */
 package com.chronicare.platform.doctors.infrastructure.persistence;
 
-import com.chronicare.platform.doctors.domain.model.Doctor;
+import com.chronicare.platform.doctors.domain.model.aggregates.Doctor;
 import com.chronicare.platform.doctors.domain.repository.DoctorRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

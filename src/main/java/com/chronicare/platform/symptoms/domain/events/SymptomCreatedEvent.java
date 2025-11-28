@@ -4,7 +4,7 @@
  */
 package com.chronicare.platform.symptoms.domain.events;
 
-import com.chronicare.platform.symptoms.domain.aggregate.Symptom;
+import com.chronicare.platform.symptoms.domain.model.aggregates.Symptom;
 import org.springframework.context.ApplicationEvent;
 
 public class SymptomCreatedEvent extends ApplicationEvent {

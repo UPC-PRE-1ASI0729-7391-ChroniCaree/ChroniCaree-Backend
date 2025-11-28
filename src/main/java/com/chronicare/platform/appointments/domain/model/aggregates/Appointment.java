@@ -2,12 +2,13 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.chronicare.platform.appointments.domain.model;
+package com.chronicare.platform.appointments.domain.model.aggregates;
 
+import com.chronicare.platform.appointments.domain.model.AppointmentType;
+import com.chronicare.platform.appointments.domain.model.AppointmentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
- 
 @Entity
 @Table(name = "appointments")
 @Data

@@ -5,7 +5,7 @@
 package com.chronicare.platform.symptoms.interfaces.rest;
 
 import com.chronicare.platform.symptoms.application.services.SymptomService;
-import com.chronicare.platform.symptoms.domain.aggregate.Symptom;
+import com.chronicare.platform.symptoms.domain.model.aggregates.Symptom;
 import com.chronicare.platform.symptoms.domain.commands.CreateSymptomCommand;
 import com.chronicare.platform.symptoms.domain.commands.UpdateSymptomCommand;
 import org.springframework.http.HttpStatus;

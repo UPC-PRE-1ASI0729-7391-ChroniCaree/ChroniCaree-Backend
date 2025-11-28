@@ -4,7 +4,7 @@
  */
 package com.chronicare.platform.alerts.application.services;
 
-import com.chronicare.platform.alerts.domain.model.Alert;
+import com.chronicare.platform.alerts.domain.model.aggregates.Alert;
 import com.chronicare.platform.alerts.domain.repository.AlertRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;

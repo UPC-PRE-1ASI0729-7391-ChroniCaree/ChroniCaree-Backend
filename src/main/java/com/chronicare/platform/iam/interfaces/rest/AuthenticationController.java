@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Optional;
+import java.util.logging.Logger;
 
 /**
  * AuthenticationController
@@ -44,6 +45,7 @@ import java.util.Optional;
 @RequestMapping(value = "/api/v1/authentication", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Authentication", description = "Authentication Endpoints")
 public class AuthenticationController {
+    private static final Logger logger = Logger.getLogger(AuthenticationController.class.getName());
     private final UserCommandService userCommandService;
     private final RefreshTokenService refreshTokenService;
     private final TokenService tokenService;
@@ -73,11 +75,14 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "404", description = "User not found or invalid credentials")
     })
     public ResponseEntity<AuthenticatedUserResource> signIn(@RequestBody SignInResource resource) {
+        logger.info("Received sign-in request for user: " + resource.email());
         var command = SignInCommandFromResourceAssembler.toCommandFromResource(resource);
         var authenticatedUser = userCommandService.handle(command);
         if (authenticatedUser.isEmpty()) {
+            logger.warning("Sign-in failed: User not found or invalid credentials for " + resource.email());
             return ResponseEntity.notFound().build();
         }
+        logger.info("Sign-in successful for user: " + resource.email());
         var authenticatedUserResource = AuthenticatedUserResourceFromEntityAssembler.toResourceFromEntity(
                 authenticatedUser.get().getLeft(), 
                 authenticatedUser.get().getMiddle(),
@@ -99,11 +104,14 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "400", description = "Bad request - Invalid input data or email already exists")
     })
     public ResponseEntity<UserResource> signUp(@RequestBody CreateUserResource resource) {
+        logger.info("Received sign-up request for email: " + resource.email());
         var command = RegisterUserCommandFromResourceAssembler.toCommandFromResource(resource);
         var user = userCommandService.handle(command);
         if (user.isEmpty()) {
+            logger.warning("Sign-up failed for email: " + resource.email());
             return ResponseEntity.badRequest().build();
         }
+        logger.info("Sign-up successful for email: " + resource.email());
         var userResource = UserResourceFromEntityAssembler.toResourceFromEntity(user.get());
         return new ResponseEntity<>(userResource, HttpStatus.CREATED);
     }

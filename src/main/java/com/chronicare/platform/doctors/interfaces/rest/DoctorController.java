@@ -1,7 +1,7 @@
 package com.chronicare.platform.doctors.interfaces.rest;
 
 import com.chronicare.platform.doctors.application.services.DoctorService;
-import com.chronicare.platform.doctors.domain.model.Doctor;
+import com.chronicare.platform.doctors.domain.model.aggregates.Doctor;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
