@@ -38,11 +38,17 @@ public class SubscriptionController {
             @ApiResponse(responseCode = "400", description = "Bad request")
     })
     public ResponseEntity<SubscriptionResource> createSubscription(@RequestBody CreateSubscriptionResource resource) {
-        Subscription subscription = CreateSubscriptionCommandFromResourceAssembler.toCommandFromResource(resource);
-        Subscription createdSubscription = subscriptionService.createSubscription(subscription);
-        return new ResponseEntity<>(
-                SubscriptionResourceFromEntityAssembler.toResourceFromEntity(createdSubscription), 
-                HttpStatus.CREATED);
+        try {
+            Subscription subscription = CreateSubscriptionCommandFromResourceAssembler.toCommandFromResource(resource);
+            String planIdString = CreateSubscriptionCommandFromResourceAssembler.extractPlanId(resource);
+            
+            Subscription createdSubscription = subscriptionService.createSubscriptionWithPlanId(subscription, planIdString);
+            return new ResponseEntity<>(
+                    SubscriptionResourceFromEntityAssembler.toResourceFromEntity(createdSubscription), 
+                    HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping("/{id}")
@@ -60,18 +66,46 @@ public class SubscriptionController {
     }
 
     @GetMapping
-    @Operation(summary = "Get subscriptions by payer", description = "Retrieves subscriptions for a specific payer")
+    @Operation(summary = "Get subscriptions", description = "Retrieves subscriptions with optional filtering and pagination")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Subscriptions retrieved successfully")
     })
-    public ResponseEntity<List<SubscriptionResource>> getSubscriptionsByPayer(
-            @RequestParam Long payerId,
-            @RequestParam String payerType) {
-        PayerType type = PayerType.valueOf(payerType.toUpperCase());
-        List<Subscription> subscriptions = subscriptionService.getSubscriptionsByPayer(payerId, type);
+    public ResponseEntity<List<SubscriptionResource>> getSubscriptions(
+            @RequestParam(required = false) Long payerId,
+            @RequestParam(required = false) String payerType,
+            @RequestParam(name = "_sort", required = false) String sort,
+            @RequestParam(name = "_order", required = false) String order,
+            @RequestParam(name = "_limit", required = false) Integer limit) {
+        
+        // If payerId and payerType are provided, filter by payer
+        if (payerId != null && payerType != null) {
+            PayerType type = PayerType.valueOf(payerType.toUpperCase());
+            List<Subscription> subscriptions = subscriptionService.getSubscriptionsByPayer(payerId, type);
+            List<SubscriptionResource> resources = subscriptions.stream()
+                    .map(SubscriptionResourceFromEntityAssembler::toResourceFromEntity)
+                    .toList();
+            return new ResponseEntity<>(resources, HttpStatus.OK);
+        }
+        
+        // Otherwise, return all subscriptions (with optional pagination support)
+        List<Subscription> subscriptions = subscriptionService.getAllSubscriptions();
         List<SubscriptionResource> resources = subscriptions.stream()
                 .map(SubscriptionResourceFromEntityAssembler::toResourceFromEntity)
-                .collect(Collectors.toList());
+                .toList();
+        
+        // Apply sorting if requested (currently only supports sorting by id)
+        if (sort != null && order != null && "id".equals(sort)) {
+            resources.sort((a, b) -> {
+                int comparison = Long.compare(a.id(), b.id());
+                return "desc".equalsIgnoreCase(order) ? -comparison : comparison;
+            });
+        }
+        
+        // Apply limit if requested
+        if (limit != null && limit > 0) {
+            resources = resources.stream().limit(limit).toList();
+        }
+        
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 

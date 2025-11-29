@@ -30,10 +30,15 @@ public class RefreshTokenService {
 
     @Transactional
     public RefreshToken createRefreshToken(Long userId) {
+        // Delete any existing refresh tokens for this user to avoid unique constraint violation
+        refreshTokenRepository.deleteByUserId(userId);
+        
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+        
         RefreshToken refreshToken = new RefreshToken();
-
-        refreshToken.setUser(userRepository.findById(userId).get());
-        refreshToken.setExpiryDate(Instant.now().plusSeconds(refreshTokenDurationDays * 24 * 60 * 60));
+        refreshToken.setUser(user);
+        refreshToken.setExpiryDate(Instant.now().plusSeconds((long) refreshTokenDurationDays * 24 * 60 * 60));
         refreshToken.setToken(UUID.randomUUID().toString());
         refreshToken.setRevoked(false);
 
@@ -49,8 +54,8 @@ public class RefreshTokenService {
     }
 
     @Transactional
-    public int deleteByUserId(Long userId) {
-        return refreshTokenRepository.deleteByUser(userRepository.findById(userId).get());
+    public void deleteByUserId(Long userId) {
+        refreshTokenRepository.deleteByUserId(userId);
     }
     
     @Transactional

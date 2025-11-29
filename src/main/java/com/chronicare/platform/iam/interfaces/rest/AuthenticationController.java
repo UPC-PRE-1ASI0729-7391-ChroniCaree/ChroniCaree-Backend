@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -74,7 +75,7 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "200", description = "User authenticated successfully"),
             @ApiResponse(responseCode = "404", description = "User not found or invalid credentials")
     })
-    public ResponseEntity<AuthenticatedUserResource> signIn(@RequestBody SignInResource resource) {
+    public ResponseEntity<AuthenticatedUserResource> signIn(@RequestBody @Valid SignInResource resource) {
         logger.info("Received sign-in request for user: " + resource.email());
         var command = SignInCommandFromResourceAssembler.toCommandFromResource(resource);
         var authenticatedUser = userCommandService.handle(command);
@@ -103,7 +104,7 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "201", description = "User registered successfully"),
             @ApiResponse(responseCode = "400", description = "Bad request - Invalid input data or email already exists")
     })
-    public ResponseEntity<UserResource> signUp(@RequestBody CreateUserResource resource) {
+    public ResponseEntity<UserResource> signUp(@RequestBody @Valid CreateUserResource resource) {
         logger.info("Received sign-up request for email: " + resource.email());
         var command = RegisterUserCommandFromResourceAssembler.toCommandFromResource(resource);
         var user = userCommandService.handle(command);
@@ -123,7 +124,7 @@ public class AuthenticationController {
                 .map(refreshTokenService::verifyExpiration)
                 .map(RefreshToken::getUser)
                 .map(user -> {
-                    String token = tokenService.generateToken(user.getUsername());
+                    String token = tokenService.generateToken(user.getUsername(), user.getRole().getName());
                     // Rotate refresh token: revoke old one (or delete) and create new one
                     // Here we just create a new one and let the old one expire or we can delete it.
                     // Requirement says: "Rotación de refresh tokens (cada refresh se emite uno nuevo y se revoca el anterior)"

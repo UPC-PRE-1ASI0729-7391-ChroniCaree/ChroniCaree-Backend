@@ -35,15 +35,25 @@ public class JwtTokenService implements TokenService {
 
     @Override
     public String generateToken(String username) {
+        return generateToken(username, null);
+    }
+
+    @Override
+    public String generateToken(String username, String role) {
         SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         Date now = new Date();
         Date expiration = DateUtils.addDays(now, expirationDays);
-        return Jwts.builder()
+        var builder = Jwts.builder()
                 .subject(username)
                 .issuedAt(now)
                 .expiration(expiration)
-                .signWith(key)
-                .compact();
+                .signWith(key);
+        
+        if (role != null) {
+            builder.claim("role", role);
+        }
+        
+        return builder.compact();
     }
 
     @Override

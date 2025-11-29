@@ -71,7 +71,7 @@ public class UserCommandServiceImpl implements UserCommandService {
             logger.warning("Password mismatch for username: " + command.username());
             return Optional.empty();
         }
-        var token = tokenService.generateToken(user.get().getUsername());
+        var token = tokenService.generateToken(user.get().getUsername(), user.get().getRole().getName());
         var refreshToken = refreshTokenService.createRefreshToken(user.get().getId());
         logger.info("User authenticated successfully: " + command.username());
         return Optional.of(ImmutableTriple.of(user.get(), token, refreshToken.getToken()));

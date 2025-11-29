@@ -2,15 +2,19 @@ package com.chronicare.platform.payments.interfaces.rest;
 
 import com.chronicare.platform.payments.application.services.PaymentService;
 import com.chronicare.platform.payments.domain.model.aggregates.Payment;
+import com.chronicare.platform.payments.domain.model.valueobjects.PayerType;
 import com.chronicare.platform.payments.domain.model.valueobjects.PaymentStatus;
 import com.chronicare.platform.payments.interfaces.rest.resources.CreatePaymentResource;
 import com.chronicare.platform.payments.interfaces.rest.resources.PaymentResource;
 import com.chronicare.platform.payments.interfaces.rest.transform.CreatePaymentCommandFromResourceAssembler;
 import com.chronicare.platform.payments.interfaces.rest.transform.PaymentResourceFromEntityAssembler;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,6 +31,7 @@ public class PaymentController {
     }
 
     @PostMapping
+    @Operation(summary = "Create a new payment")
     public ResponseEntity<PaymentResource> createPayment(@RequestBody CreatePaymentResource resource) {
         Payment payment = CreatePaymentCommandFromResourceAssembler.toCommandFromResource(resource);
         Payment createdPayment = paymentService.createPayment(payment);
@@ -34,6 +39,7 @@ public class PaymentController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Get payment by ID")
     public ResponseEntity<PaymentResource> getPaymentById(@PathVariable Long id) {
         return paymentService.getPaymentById(id)
                 .map(payment -> new ResponseEntity<>(PaymentResourceFromEntityAssembler.toResourceFromEntity(payment), HttpStatus.OK))
@@ -41,8 +47,33 @@ public class PaymentController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PaymentResource>> getPaymentsBySubscription(@RequestParam Long subscriptionId) {
-        List<Payment> payments = paymentService.getPaymentsBySubscription(subscriptionId);
+    @Operation(summary = "Get payments with optional filters")
+    public ResponseEntity<List<PaymentResource>> getPayments(
+            @RequestParam(required = false) Long subscriptionId,
+            @RequestParam(required = false) Long payerId,
+            @RequestParam(required = false) String payerType,
+            @RequestParam(required = false, defaultValue = "id") String _sort,
+            @RequestParam(required = false, defaultValue = "desc") String _order,
+            @RequestParam(required = false, defaultValue = "10") Integer _limit) {
+        
+        List<Payment> payments;
+        
+        if (subscriptionId != null) {
+            // Filter by subscription
+            payments = paymentService.getPaymentsBySubscription(subscriptionId);
+        } else if (payerId != null && payerType != null) {
+            // Filter by payer and type
+            PayerType type = PayerType.valueOf(payerType.toUpperCase());
+            payments = paymentService.getPaymentsByPayerAndType(payerId, type);
+        } else if (payerId != null) {
+            // Filter by payer only
+            payments = paymentService.getPaymentsByPayer(payerId);
+        } else {
+            // Get all with pagination (limited)
+            Page<Payment> pagedPayments = paymentService.getAllPayments(0, _limit);
+            payments = pagedPayments.getContent();
+        }
+        
         List<PaymentResource> resources = payments.stream()
                 .map(PaymentResourceFromEntityAssembler::toResourceFromEntity)
                 .collect(Collectors.toList());
@@ -50,6 +81,7 @@ public class PaymentController {
     }
 
     @PatchMapping("/{id}")
+    @Operation(summary = "Update payment status")
     public ResponseEntity<PaymentResource> updatePaymentStatus(
             @PathVariable Long id,
             @RequestBody Map<String, Object> updates) {
@@ -62,10 +94,6 @@ public class PaymentController {
             status = PaymentStatus.valueOf(statusStr.toUpperCase());
         }
 
-        // Note: This is a simplified update. In a real app, you might want a specific command object.
-        // If status is null, we might just be updating the intent ID, but the service method expects status.
-        // For now assuming status is always sent if we are updating.
-        
         if (status == null) {
              return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
