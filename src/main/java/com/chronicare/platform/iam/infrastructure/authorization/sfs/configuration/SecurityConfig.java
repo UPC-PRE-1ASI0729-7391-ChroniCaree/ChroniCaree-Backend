@@ -105,6 +105,8 @@ public class SecurityConfig {
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/tenants").permitAll()
                 // Doctors list - PÚBLICO (para mostrar lista de doctores disponibles)
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/doctors").permitAll()
+                // Check email - PÚBLICO (para validar si email existe durante invitación)
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/users/check-email").permitAll()
                 
                 // ════════════════════════════════════════════════════════════════
                 // ENDPOINTS PROTEGIDOS (requieren autenticación)

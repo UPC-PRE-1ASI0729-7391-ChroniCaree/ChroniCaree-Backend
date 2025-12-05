@@ -9,6 +9,10 @@ import com.chronicare.platform.tenants.domain.commands.UpdateTenantCommand;
 import com.chronicare.platform.tenants.domain.valueobjects.TenantName;
 import com.chronicare.platform.doctors.infrastructure.persistence.jpa.repositories.DoctorRepository;
 import com.chronicare.platform.patients.domain.repository.PatientRepository;
+import com.chronicare.platform.invitations.domain.model.queries.GetInvitationsByTenantIdAndStatusQuery;
+import com.chronicare.platform.invitations.domain.services.InvitationQueryService;
+import com.chronicare.platform.invitations.interfaces.rest.transform.InvitationResourceFromEntityAssembler;
+import com.chronicare.platform.invitations.interfaces.rest.resources.InvitationResource;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
@@ -29,11 +33,18 @@ public class TenantController {
     private final TenantService tenantService;
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
+    private final InvitationQueryService invitationQueryService;
 
-    public TenantController(TenantService tenantService, DoctorRepository doctorRepository, PatientRepository patientRepository) {
+    public TenantController(
+            TenantService tenantService, 
+            DoctorRepository doctorRepository, 
+            PatientRepository patientRepository,
+            InvitationQueryService invitationQueryService
+    ) {
         this.tenantService = tenantService;
         this.doctorRepository = doctorRepository;
         this.patientRepository = patientRepository;
+        this.invitationQueryService = invitationQueryService;
     }
 
     record TenantResponse(
@@ -217,5 +228,49 @@ public class TenantController {
         DeleteTenantCommand cmd = new DeleteTenantCommand(id);
         tenantService.deleteTenant(cmd);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * GET /api/v1/tenants/{id}/invitations/pending
+     * Get pending invitations for a tenant
+     */
+    @GetMapping("/{id}/invitations/pending")
+    @Operation(summary = "Get pending invitations for tenant")
+    public ResponseEntity<List<InvitationResource>> getPendingInvitations(@PathVariable Long id) {
+        var query = new GetInvitationsByTenantIdAndStatusQuery(id, "pending");
+        var invitations = invitationQueryService.handle(query);
+        
+        List<InvitationResource> resources = invitations.stream()
+                .map(InvitationResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
+        
+        return ResponseEntity.ok(resources);
+    }
+
+    /**
+     * GET /api/v1/tenants/{id}/invitations
+     * Get all invitations for a tenant
+     */
+    @GetMapping("/{id}/invitations")
+    @Operation(summary = "Get all invitations for tenant")
+    public ResponseEntity<List<InvitationResource>> getAllInvitationsForTenant(
+            @PathVariable Long id,
+            @RequestParam(required = false) String status
+    ) {
+        List<InvitationResource> resources;
+        
+        if (status != null && !status.isEmpty()) {
+            var query = new GetInvitationsByTenantIdAndStatusQuery(id, status);
+            resources = invitationQueryService.handle(query).stream()
+                    .map(InvitationResourceFromEntityAssembler::toResourceFromEntity)
+                    .toList();
+        } else {
+            var query = new com.chronicare.platform.invitations.domain.model.queries.GetInvitationsByTenantIdQuery(id);
+            resources = invitationQueryService.handle(query).stream()
+                    .map(InvitationResourceFromEntityAssembler::toResourceFromEntity)
+                    .toList();
+        }
+        
+        return ResponseEntity.ok(resources);
     }
 }

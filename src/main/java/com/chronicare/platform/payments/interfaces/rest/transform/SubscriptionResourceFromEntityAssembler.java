@@ -11,7 +11,7 @@ public class SubscriptionResourceFromEntityAssembler {
             subscription.getPayerId(),
             subscription.getPayerType().name().toLowerCase(),
             subscription.getPlanId(),
-            subscription.getStatus().name(),
+            subscription.getStatus().name().toLowerCase(),
             subscription.getStripeSubscriptionId(),
             subscription.getStartDate(),
             subscription.getEndDate(),

@@ -103,7 +103,25 @@ public class SubscriptionService {
 
     @Transactional(readOnly = true)
     public Optional<Subscription> getActiveSubscription(Long payerId, PayerType payerType) {
-        return subscriptionRepository.findByPayerIdAndPayerTypeAndStatus(payerId, payerType, SubscriptionStatus.ACTIVE);
+        // First try to find an ACTIVE subscription
+        Optional<Subscription> active = subscriptionRepository.findByPayerIdAndPayerTypeAndStatus(payerId, payerType, SubscriptionStatus.ACTIVE);
+        if (active.isPresent()) {
+            return active;
+        }
+        // If no active subscription, look for PENDING (considered as active by frontend)
+        return subscriptionRepository.findByPayerIdAndPayerTypeAndStatus(payerId, payerType, SubscriptionStatus.PENDING);
+    }
+
+    /**
+     * Get any subscription (active or pending) for a payer
+     */
+    @Transactional(readOnly = true)
+    public Optional<Subscription> getActiveOrPendingSubscription(Long payerId, PayerType payerType) {
+        Optional<Subscription> active = subscriptionRepository.findByPayerIdAndPayerTypeAndStatus(payerId, payerType, SubscriptionStatus.ACTIVE);
+        if (active.isPresent()) {
+            return active;
+        }
+        return subscriptionRepository.findByPayerIdAndPayerTypeAndStatus(payerId, payerType, SubscriptionStatus.PENDING);
     }
 
     @Transactional

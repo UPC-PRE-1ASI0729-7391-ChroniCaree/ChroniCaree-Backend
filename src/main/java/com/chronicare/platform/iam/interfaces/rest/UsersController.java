@@ -144,6 +144,27 @@ public class UsersController {
     }
 
     /**
+     * Check if email exists in the system
+     * @param email The email address to check
+     * @return A map containing "exists" boolean and optionally the user id if found
+     */
+    @GetMapping("/check-email")
+    @Operation(summary = "Check email availability", description = "Check if an email is already registered in the system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Email check completed")
+    })
+    public ResponseEntity<java.util.Map<String, Object>> checkEmailExists(@RequestParam String email) {
+        var query = new GetUserByEmailQuery(email);
+        var user = userQueryService.handle(query);
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        result.put("exists", user.isPresent());
+        if (user.isPresent()) {
+            result.put("userId", user.get().getId());
+        }
+        return ResponseEntity.ok(result);
+    }
+
+    /**
      * Get users by role
      * @param role The role name (patient, doctor, hospital_admin)
      * @return A list of {@link UserResource} resources for all users with the specified role

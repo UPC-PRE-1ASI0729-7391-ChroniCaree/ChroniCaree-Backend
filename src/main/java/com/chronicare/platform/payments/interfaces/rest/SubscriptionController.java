@@ -1,13 +1,17 @@
 package com.chronicare.platform.payments.interfaces.rest;
 
 import com.chronicare.platform.payments.application.services.SubscriptionService;
+import com.chronicare.platform.payments.application.services.SubscriptionPlanService;
 import com.chronicare.platform.payments.domain.model.aggregates.Subscription;
+import com.chronicare.platform.payments.domain.model.aggregates.SubscriptionPlan;
 import com.chronicare.platform.payments.domain.model.valueobjects.PayerType;
 import com.chronicare.platform.payments.domain.model.valueobjects.SubscriptionStatus;
 import com.chronicare.platform.payments.interfaces.rest.resources.CreateSubscriptionResource;
 import com.chronicare.platform.payments.interfaces.rest.resources.SubscriptionResource;
+import com.chronicare.platform.payments.interfaces.rest.resources.SubscriptionPlanResource;
 import com.chronicare.platform.payments.interfaces.rest.transform.CreateSubscriptionCommandFromResourceAssembler;
 import com.chronicare.platform.payments.interfaces.rest.transform.SubscriptionResourceFromEntityAssembler;
+import com.chronicare.platform.payments.interfaces.rest.transform.SubscriptionPlanResourceFromEntityAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -26,10 +30,28 @@ import java.util.stream.Collectors;
 public class SubscriptionController {
 
     private final SubscriptionService subscriptionService;
+    private final SubscriptionPlanService subscriptionPlanService;
 
-    public SubscriptionController(SubscriptionService subscriptionService) {
+    public SubscriptionController(SubscriptionService subscriptionService, SubscriptionPlanService subscriptionPlanService) {
         this.subscriptionService = subscriptionService;
+        this.subscriptionPlanService = subscriptionPlanService;
     }
+
+    /**
+     * Response that includes subscription with embedded plan details
+     */
+    public record SubscriptionWithPlanResponse(
+        Long id,
+        Long payerId,
+        String payerType,
+        Long planId,
+        String status,
+        String stripeSubscriptionId,
+        String startDate,
+        String endDate,
+        String nextBillingDate,
+        SubscriptionPlanResource plan
+    ) {}
 
     @PostMapping
     @Operation(summary = "Create subscription", description = "Creates a new subscription for a payer")
@@ -171,5 +193,74 @@ public class SubscriptionController {
         return new ResponseEntity<>(
                 SubscriptionResourceFromEntityAssembler.toResourceFromEntity(activatedSubscription), 
                 HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/with-plan")
+    @Operation(summary = "Get subscription with plan details", description = "Retrieves a subscription by ID with embedded plan information")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Subscription with plan retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Subscription not found")
+    })
+    public ResponseEntity<SubscriptionWithPlanResponse> getSubscriptionWithPlan(@PathVariable Long id) {
+        return subscriptionService.getSubscriptionById(id)
+                .map(subscription -> {
+                    SubscriptionPlanResource planResource = null;
+                    if (subscription.getPlanId() != null) {
+                        planResource = subscriptionPlanService.getPlanById(subscription.getPlanId())
+                                .map(SubscriptionPlanResourceFromEntityAssembler::toResourceFromEntity)
+                                .orElse(null);
+                    }
+                    
+                    SubscriptionWithPlanResponse response = new SubscriptionWithPlanResponse(
+                        subscription.getId(),
+                        subscription.getPayerId(),
+                        subscription.getPayerType().name().toLowerCase(),
+                        subscription.getPlanId(),
+                        subscription.getStatus().name().toLowerCase(),
+                        subscription.getStripeSubscriptionId(),
+                        subscription.getStartDate() != null ? subscription.getStartDate().toString() : null,
+                        subscription.getEndDate() != null ? subscription.getEndDate().toString() : null,
+                        subscription.getNextBillingDate() != null ? subscription.getNextBillingDate().toString() : null,
+                        planResource
+                    );
+                    return new ResponseEntity<>(response, HttpStatus.OK);
+                })
+                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    @GetMapping("/active/with-plan")
+    @Operation(summary = "Get active subscription with plan details", description = "Gets the active subscription for a payer with embedded plan information")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Active subscription with plan found"),
+            @ApiResponse(responseCode = "404", description = "No active subscription found")
+    })
+    public ResponseEntity<SubscriptionWithPlanResponse> getActiveSubscriptionWithPlan(
+            @RequestParam Long payerId,
+            @RequestParam String payerType) {
+        PayerType type = PayerType.valueOf(payerType.toUpperCase());
+        return subscriptionService.getActiveSubscription(payerId, type)
+                .map(subscription -> {
+                    SubscriptionPlanResource planResource = null;
+                    if (subscription.getPlanId() != null) {
+                        planResource = subscriptionPlanService.getPlanById(subscription.getPlanId())
+                                .map(SubscriptionPlanResourceFromEntityAssembler::toResourceFromEntity)
+                                .orElse(null);
+                    }
+                    
+                    SubscriptionWithPlanResponse response = new SubscriptionWithPlanResponse(
+                        subscription.getId(),
+                        subscription.getPayerId(),
+                        subscription.getPayerType().name().toLowerCase(),
+                        subscription.getPlanId(),
+                        subscription.getStatus().name().toLowerCase(),
+                        subscription.getStripeSubscriptionId(),
+                        subscription.getStartDate() != null ? subscription.getStartDate().toString() : null,
+                        subscription.getEndDate() != null ? subscription.getEndDate().toString() : null,
+                        subscription.getNextBillingDate() != null ? subscription.getNextBillingDate().toString() : null,
+                        planResource
+                    );
+                    return new ResponseEntity<>(response, HttpStatus.OK);
+                })
+                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 }
