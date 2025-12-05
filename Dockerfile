@@ -1,32 +1,29 @@
-# Multi-stage build for ChroniCare Backend
-FROM maven:3.9-eclipse-temurin-21 AS build
+# Build stage
+FROM eclipse-temurin:25-jdk AS build
 
 WORKDIR /app
 
-# Copy pom.xml and download dependencies (cached layer)
-COPY pom.xml .
-COPY .mvn .mvn
-COPY mvnw .
-COPY mvnw.cmd .
+COPY .mvn/ .mvn/
+COPY mvnw pom.xml ./
 
-RUN mvn dependency:go-offline -B
+# Convert line endings for Windows users and make executable
+RUN sed -i 's/\r$//' mvnw && chmod +x mvnw
 
-# Copy source code
+# Download dependencies
+RUN ./mvnw dependency:go-offline -B
+
 COPY src ./src
 
-# Build the application (skip tests for faster build)
-RUN mvn clean package -DskipTests
+# Build
+RUN ./mvnw clean package -DskipTests
 
-# Production stage with JRE only
-FROM eclipse-temurin:21-jre-alpine
+# Run stage
+FROM eclipse-temurin:25-jre
 
 WORKDIR /app
 
-# Copy the built jar from build stage
 COPY --from=build /app/target/*.jar app.jar
 
-# Expose port (Railway will override with $PORT)
 EXPOSE 8080
 
-# Run the application
 CMD ["java", "-jar", "app.jar"]
