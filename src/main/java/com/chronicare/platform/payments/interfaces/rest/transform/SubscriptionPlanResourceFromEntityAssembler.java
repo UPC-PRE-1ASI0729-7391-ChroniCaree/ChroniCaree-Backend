@@ -20,8 +20,8 @@ public class SubscriptionPlanResourceFromEntityAssembler {
         }
         
         return new SubscriptionPlanResource(
-            plan.getId(),
-            plan.getPlanId(),
+            plan.getPlanId(),                           // String ID like "tenant_professional"
+            plan.getId(),                               // Numeric database ID
             plan.getType().name().toLowerCase(),
             plan.getName(),
             plan.getPrice().doubleValue(),

@@ -83,16 +83,31 @@ public class UsersController {
     }
 
     /**
-     * Get all users
-     * @return A list of {@link UserResource} resources for all users
+     * Get all users or filter by email
+     * @param email Optional email parameter to filter users
+     * @return A list of {@link UserResource} resources for all users (or filtered by email)
      */
     @GetMapping
-    @Operation(summary = "Get all users", description = "Retrieve all registered users")
+    @Operation(summary = "Get all users", description = "Retrieve all registered users or filter by email")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-    public ResponseEntity<List<UserResource>> getAllUsers() {
+    public ResponseEntity<List<UserResource>> getAllUsers(
+            @RequestParam(required = false) String email) {
+        
+        // If email parameter is provided, filter by email
+        if (email != null && !email.isBlank()) {
+            var query = new GetUserByEmailQuery(email);
+            var user = userQueryService.handle(query);
+            if (user.isPresent()) {
+                var userResource = UserResourceFromEntityAssembler.toResourceFromEntity(user.get());
+                return ResponseEntity.ok(List.of(userResource));
+            }
+            return ResponseEntity.ok(List.of()); // Return empty list if email not found
+        }
+        
+        // No filter, return all users
         var query = new GetAllUsersQuery();
         var users = userQueryService.handle(query);
         var userResources = users.stream()

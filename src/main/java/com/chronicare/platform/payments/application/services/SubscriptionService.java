@@ -28,6 +28,7 @@ public class SubscriptionService {
 
     /**
      * Creates a subscription using a string plan ID (e.g., "tenant_professional")
+     * IMPORTANT: Respects the status from the subscription object (set by frontend after payment)
      */
     @Transactional
     public Subscription createSubscriptionWithPlanId(Subscription subscription, String planIdString) {
@@ -37,10 +38,31 @@ public class SubscriptionService {
         // Validate that plan type matches payer type
         validatePlanTypeMatchesPayerType(plan.getType(), subscription.getPayerType());
         
-        // Set the resolved numeric plan ID
+        // Set the resolved numeric plan ID and store the string plan ID
         subscription.setPlanId(plan.getId());
-        subscription.setStartDate(LocalDateTime.now());
-        subscription.setStatus(SubscriptionStatus.PENDING);
+        subscription.setPlanIdString(plan.getPlanId()); // Store the string plan ID (e.g., "patient_standard")
+        
+        // Set start date if not already set
+        if (subscription.getStartDate() == null) {
+            subscription.setStartDate(LocalDateTime.now());
+        }
+        
+        // Set end date if not already set (default 1 month)
+        if (subscription.getEndDate() == null) {
+            subscription.setEndDate(subscription.getStartDate().plusMonths(1));
+        }
+        
+        // Set next billing date if not already set
+        if (subscription.getNextBillingDate() == null) {
+            subscription.setNextBillingDate(subscription.getEndDate());
+        }
+        
+        // IMPORTANT: Do NOT override status! The assembler sets it from the frontend request
+        // This allows the frontend to create subscriptions with status='active' after successful payment
+        // If status is still null for some reason, default to ACTIVE
+        if (subscription.getStatus() == null) {
+            subscription.setStatus(SubscriptionStatus.ACTIVE);
+        }
         
         return subscriptionRepository.save(subscription);
     }

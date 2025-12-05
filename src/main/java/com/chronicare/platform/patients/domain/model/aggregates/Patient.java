@@ -37,6 +37,7 @@ public class Patient extends AuditableAbstractAggregateRoot<Patient> {
 
     public Patient(CreatePatientCommand command) {
         this.userId = command.userId();
+        this.tenantId = command.tenantId(); // Assign to hospital/clinic
         this.firstName = command.firstName();
         this.lastName = command.lastName();
         this.email = command.email();
@@ -48,6 +49,21 @@ public class Patient extends AuditableAbstractAggregateRoot<Patient> {
         this.photoUrl = command.photoUrl();
         this.weight = command.weight();
         this.height = command.height();
+    }
+
+    /**
+     * Assigns a doctor to this patient
+     * @param doctorId The doctor ID to assign
+     */
+    public void assignDoctor(Long doctorId) {
+        this.assignedDoctorId = doctorId;
+    }
+
+    /**
+     * Removes the assigned doctor from this patient
+     */
+    public void unassignDoctor() {
+        this.assignedDoctorId = null;
     }
 
     public void update(UpdatePatientCommand command) {

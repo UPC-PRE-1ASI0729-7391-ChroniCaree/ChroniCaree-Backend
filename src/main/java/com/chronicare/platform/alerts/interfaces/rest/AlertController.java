@@ -16,11 +16,14 @@ import com.chronicare.platform.alerts.interfaces.rest.transform.AlertResourceFro
 import com.chronicare.platform.alerts.interfaces.rest.transform.CreateAlertCommandFromResourceAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,6 +34,8 @@ import java.util.Optional;
 @RequestMapping(value = "/api/v1/alerts", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Alerts", description = "Alert management API")
 public class AlertController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AlertController.class);
 
     private final AlertCommandService alertCommandService;
     private final AlertQueryService alertQueryService;
@@ -51,6 +56,25 @@ public class AlertController {
     }
 
     // ==================== READ ====================
+    
+    @GetMapping
+    @Operation(summary = "Get all alerts")
+    public ResponseEntity<List<AlertResource>> getAllAlerts() {
+        try {
+            logger.info("Fetching all alerts");
+            List<Alert> alerts = alertQueryService.getAllAlerts();
+            logger.info("Found {} alerts", alerts.size());
+            
+            List<AlertResource> resources = alerts.stream()
+                .map(AlertResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
+            
+            return ResponseEntity.ok(resources);
+        } catch (Exception e) {
+            logger.error("Error fetching all alerts", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
+        }
+    }
     
     @GetMapping("/{alertId}")
     @Operation(summary = "Get alert by ID")

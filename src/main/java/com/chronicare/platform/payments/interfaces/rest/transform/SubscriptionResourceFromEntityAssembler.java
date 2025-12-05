@@ -10,12 +10,19 @@ public class SubscriptionResourceFromEntityAssembler {
             subscription.getId(),
             subscription.getPayerId(),
             subscription.getPayerType().name().toLowerCase(),
-            subscription.getPlanId(),
+            subscription.getPatientId(),
+            subscription.getPlanIdString(),        // String plan ID like "patient_standard"
+            subscription.getPlanId(),              // Numeric plan ID
             subscription.getStatus().name().toLowerCase(),
             subscription.getStripeSubscriptionId(),
             subscription.getStartDate(),
             subscription.getEndDate(),
-            subscription.getNextBillingDate()
+            subscription.getNextBillingDate(),
+            subscription.getAutoRenew(),
+            subscription.getPaymentMethod() != null ? subscription.getPaymentMethod().name() : null,
+            subscription.getBillingEmail(),
+            subscription.getLastPaymentDate(),
+            subscription.getLastPaymentAmount()
         );
     }
 }

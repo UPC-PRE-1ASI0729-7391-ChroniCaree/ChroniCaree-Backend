@@ -44,12 +44,19 @@ public class SubscriptionController {
         Long id,
         Long payerId,
         String payerType,
-        Long planId,
+        Long patientId,
+        String planId,          // String plan ID like "patient_standard"
+        Long planIdNumeric,     // Numeric plan ID
         String status,
         String stripeSubscriptionId,
         String startDate,
         String endDate,
         String nextBillingDate,
+        Boolean autoRenew,
+        String paymentMethod,
+        String billingEmail,
+        String lastPaymentDate,
+        String lastPaymentAmount,
         SubscriptionPlanResource plan
     ) {}
 
@@ -95,6 +102,7 @@ public class SubscriptionController {
     public ResponseEntity<List<SubscriptionResource>> getSubscriptions(
             @RequestParam(required = false) Long payerId,
             @RequestParam(required = false) String payerType,
+            @RequestParam(required = false) String status,
             @RequestParam(name = "_sort", required = false) String sort,
             @RequestParam(name = "_order", required = false) String order,
             @RequestParam(name = "_limit", required = false) Integer limit) {
@@ -103,6 +111,15 @@ public class SubscriptionController {
         if (payerId != null && payerType != null) {
             PayerType type = PayerType.valueOf(payerType.toUpperCase());
             List<Subscription> subscriptions = subscriptionService.getSubscriptionsByPayer(payerId, type);
+            
+            // Apply status filter if provided
+            if (status != null && !status.isEmpty()) {
+                SubscriptionStatus statusEnum = SubscriptionStatus.valueOf(status.toUpperCase());
+                subscriptions = subscriptions.stream()
+                        .filter(s -> s.getStatus() == statusEnum)
+                        .toList();
+            }
+            
             List<SubscriptionResource> resources = subscriptions.stream()
                     .map(SubscriptionResourceFromEntityAssembler::toResourceFromEntity)
                     .toList();
@@ -111,9 +128,18 @@ public class SubscriptionController {
         
         // Otherwise, return all subscriptions (with optional pagination support)
         List<Subscription> subscriptions = subscriptionService.getAllSubscriptions();
-        List<SubscriptionResource> resources = subscriptions.stream()
+        
+        // Apply status filter if provided
+        if (status != null && !status.isEmpty()) {
+            SubscriptionStatus statusEnum = SubscriptionStatus.valueOf(status.toUpperCase());
+            subscriptions = subscriptions.stream()
+                    .filter(s -> s.getStatus() == statusEnum)
+                    .toList();
+        }
+        
+        List<SubscriptionResource> resources = new java.util.ArrayList<>(subscriptions.stream()
                 .map(SubscriptionResourceFromEntityAssembler::toResourceFromEntity)
-                .toList();
+                .toList());
         
         // Apply sorting if requested (currently only supports sorting by id)
         if (sort != null && order != null && "id".equals(sort)) {
@@ -215,12 +241,19 @@ public class SubscriptionController {
                         subscription.getId(),
                         subscription.getPayerId(),
                         subscription.getPayerType().name().toLowerCase(),
+                        subscription.getPatientId(),
+                        subscription.getPlanIdString(),
                         subscription.getPlanId(),
                         subscription.getStatus().name().toLowerCase(),
                         subscription.getStripeSubscriptionId(),
                         subscription.getStartDate() != null ? subscription.getStartDate().toString() : null,
                         subscription.getEndDate() != null ? subscription.getEndDate().toString() : null,
                         subscription.getNextBillingDate() != null ? subscription.getNextBillingDate().toString() : null,
+                        subscription.getAutoRenew(),
+                        subscription.getPaymentMethod() != null ? subscription.getPaymentMethod().name() : null,
+                        subscription.getBillingEmail(),
+                        subscription.getLastPaymentDate() != null ? subscription.getLastPaymentDate().toString() : null,
+                        subscription.getLastPaymentAmount() != null ? subscription.getLastPaymentAmount().toString() : null,
                         planResource
                     );
                     return new ResponseEntity<>(response, HttpStatus.OK);
@@ -251,12 +284,19 @@ public class SubscriptionController {
                         subscription.getId(),
                         subscription.getPayerId(),
                         subscription.getPayerType().name().toLowerCase(),
+                        subscription.getPatientId(),
+                        subscription.getPlanIdString(),
                         subscription.getPlanId(),
                         subscription.getStatus().name().toLowerCase(),
                         subscription.getStripeSubscriptionId(),
                         subscription.getStartDate() != null ? subscription.getStartDate().toString() : null,
                         subscription.getEndDate() != null ? subscription.getEndDate().toString() : null,
                         subscription.getNextBillingDate() != null ? subscription.getNextBillingDate().toString() : null,
+                        subscription.getAutoRenew(),
+                        subscription.getPaymentMethod() != null ? subscription.getPaymentMethod().name() : null,
+                        subscription.getBillingEmail(),
+                        subscription.getLastPaymentDate() != null ? subscription.getLastPaymentDate().toString() : null,
+                        subscription.getLastPaymentAmount() != null ? subscription.getLastPaymentAmount().toString() : null,
                         planResource
                     );
                     return new ResponseEntity<>(response, HttpStatus.OK);

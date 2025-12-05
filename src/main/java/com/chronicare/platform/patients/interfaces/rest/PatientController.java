@@ -125,6 +125,7 @@ public class PatientController {
 
     record CreatePatientRequest(
         Long userId,
+        Long tenantId,      // Hospital/Clinic that manages this patient
         String firstName,
         String lastName,
         String email,
@@ -153,6 +154,7 @@ public class PatientController {
     public ResponseEntity<Patient> createPatient(@RequestBody CreatePatientRequest request) {
         CreatePatientCommand command = new CreatePatientCommand(
             request.userId(),
+            request.tenantId(),
             request.firstName(),
             request.lastName(),
             request.email(),
@@ -167,6 +169,46 @@ public class PatientController {
         );
         Patient created = patientCommandService.handle(command);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
+    }
+
+    /**
+     * Assign a doctor to a patient
+     */
+    record AssignDoctorRequest(Long doctorId) {}
+
+    @PutMapping("/{patientId}/assign-doctor")
+    @Operation(summary = "Assign doctor to patient", description = "Assigns a doctor to manage a specific patient")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Doctor assigned successfully"),
+            @ApiResponse(responseCode = "404", description = "Patient not found"),
+            @ApiResponse(responseCode = "400", description = "Bad request")
+    })
+    public ResponseEntity<Patient> assignDoctorToPatient(
+            @PathVariable Long patientId,
+            @RequestBody AssignDoctorRequest request) {
+        var patient = patientQueryService.handle(new GetPatientByIdQuery(patientId));
+        if (patient.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Patient p = patient.get();
+        p.assignDoctor(request.doctorId());
+        Patient saved = patientCommandService.handleAssignDoctor(patientId, request.doctorId());
+        return ResponseEntity.ok(saved);
+    }
+
+    @DeleteMapping("/{patientId}/assign-doctor")
+    @Operation(summary = "Unassign doctor from patient", description = "Removes the assigned doctor from a patient")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Doctor unassigned successfully"),
+            @ApiResponse(responseCode = "404", description = "Patient not found")
+    })
+    public ResponseEntity<Patient> unassignDoctorFromPatient(@PathVariable Long patientId) {
+        var patient = patientQueryService.handle(new GetPatientByIdQuery(patientId));
+        if (patient.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Patient saved = patientCommandService.handleUnassignDoctor(patientId);
+        return ResponseEntity.ok(saved);
     }
 
     record UpdatePatientRequest(

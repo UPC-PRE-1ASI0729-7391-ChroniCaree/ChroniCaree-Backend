@@ -28,12 +28,26 @@ public class SubscriptionPlanController {
     }
 
     @GetMapping
-    @Operation(summary = "Get all subscription plans", description = "Retrieves all active subscription plans")
+    @Operation(summary = "Get all subscription plans", description = "Retrieves all active subscription plans, optionally filtered by type or id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Plans retrieved successfully")
     })
     public ResponseEntity<List<SubscriptionPlanResource>> getAllPlans(
-            @RequestParam(required = false) String type) {
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String id) {
+        
+        // If id query param is provided (e.g., ?id=patient_standard), return single plan as list
+        if (id != null && !id.isEmpty()) {
+            return subscriptionPlanService.getPlanByPlanId(id)
+                    .map(plan -> {
+                        List<SubscriptionPlanResource> resources = List.of(
+                                SubscriptionPlanResourceFromEntityAssembler.toResourceFromEntity(plan)
+                        );
+                        return new ResponseEntity<>(resources, HttpStatus.OK);
+                    })
+                    .orElse(new ResponseEntity<>(List.of(), HttpStatus.OK));
+        }
+        
         List<SubscriptionPlan> plans;
         
         if (type != null && !type.isEmpty()) {

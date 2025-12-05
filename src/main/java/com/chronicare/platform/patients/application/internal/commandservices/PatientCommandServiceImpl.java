@@ -46,4 +46,22 @@ public class PatientCommandServiceImpl implements PatientCommandService {
         }
         patientRepository.deleteById(command.patientId());
     }
+
+    @Override
+    @Transactional
+    public Patient handleAssignDoctor(Long patientId, Long doctorId) {
+        var patient = patientRepository.findById(patientId)
+                .orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+        patient.assignDoctor(doctorId);
+        return patientRepository.save(patient);
+    }
+
+    @Override
+    @Transactional
+    public Patient handleUnassignDoctor(Long patientId) {
+        var patient = patientRepository.findById(patientId)
+                .orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+        patient.unassignDoctor();
+        return patientRepository.save(patient);
+    }
 }

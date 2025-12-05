@@ -196,23 +196,54 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "400", description = "Bad request - Invalid input data"),
             @ApiResponse(responseCode = "409", description = "Conflict - Email or Hospital name already exists")
     })
-    public ResponseEntity<?> signUpHospitalAdmin(@RequestBody @Valid RegisterHospitalAdminResource resource) {
+    public ResponseEntity<?> signUpHospitalAdmin(@RequestBody RegisterHospitalAdminResource resource) {
         logger.info("========== HOSPITAL ADMIN SIGN-UP START ==========");
-        logger.info("Email: " + resource.email());
-        logger.info("Name: " + resource.getFullName());
-        logger.info("Hospital Name: " + resource.hospitalName());
-        logger.info("Hospital Email: " + resource.hospitalEmail());
-        logger.info("Hospital Phone: " + resource.hospitalPhone());
-        logger.info("Hospital Address: " + resource.hospitalAddress());
+        
+        // Use getter methods that support multiple field names
+        String adminEmail = resource.getEmail();
+        String adminPassword = resource.getPassword();
+        String adminName = resource.getFullName();
+        String hospitalName = resource.hospitalName();
+        String hospitalEmail = resource.getHospitalEmail();
+        String hospitalPhone = resource.getHospitalPhone();
+        String hospitalAddress = resource.getHospitalAddress();
+        
+        logger.info("Email: " + adminEmail);
+        logger.info("Name: " + adminName);
+        logger.info("Hospital Name: " + hospitalName);
+        logger.info("Hospital Email: " + hospitalEmail);
+        logger.info("Hospital Phone: " + hospitalPhone);
+        logger.info("Hospital Address: " + hospitalAddress);
+        
+        // Manual validation since we accept multiple field names
+        if (adminEmail == null || adminEmail.isBlank()) {
+            logger.severe("❌ Validation failed: Email is required (tried 'email' and 'adminEmail')");
+            return ResponseEntity.badRequest()
+                    .body(new ApiErrorResponse("VALIDATION_ERROR", "Datos de entrada inválidos", 
+                            java.util.Map.of("email", "Email is required (use 'email' or 'adminEmail' field)")));
+        }
+        if (adminPassword == null || adminPassword.isBlank()) {
+            logger.severe("❌ Validation failed: Password is required (tried 'password' and 'adminPassword')");
+            return ResponseEntity.badRequest()
+                    .body(new ApiErrorResponse("VALIDATION_ERROR", "Datos de entrada inválidos",
+                            java.util.Map.of("password", "Password is required (use 'password' or 'adminPassword' field)")));
+        }
+        if (hospitalName == null || hospitalName.isBlank()) {
+            logger.severe("❌ Validation failed: Hospital name is required");
+            return ResponseEntity.badRequest()
+                    .body(new ApiErrorResponse("VALIDATION_ERROR", "Datos de entrada inválidos",
+                            java.util.Map.of("hospitalName", "Hospital name is required")));
+        }
+        
         try {
             var command = new com.chronicare.platform.iam.domain.model.commands.RegisterHospitalAdminCommand(
-                resource.email(),
-                resource.password(),
-                resource.getFullName(),
-                resource.hospitalName(),
-                resource.hospitalEmail(),
-                resource.hospitalPhone(),
-                resource.hospitalAddress()
+                adminEmail,
+                adminPassword,
+                adminName,
+                hospitalName,
+                hospitalEmail,
+                hospitalPhone,
+                hospitalAddress
             );
             logger.info("Command created, calling UserCommandService.handle()");
             
