@@ -40,6 +40,11 @@ public class JpaTenantRepositoryAdapter implements TenantRepository {
     }
 
     @Override
+    public Optional<Tenant> findByAdminUserId(Long adminUserId) {
+        return springRepo.findByAdminUserId(adminUserId);
+    }
+
+    @Override
     public Tenant save(Tenant tenant) {
         return springRepo.save(tenant);
     }

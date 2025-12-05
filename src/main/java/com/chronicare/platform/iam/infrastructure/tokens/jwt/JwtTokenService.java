@@ -1,6 +1,7 @@
 package com.chronicare.platform.iam.infrastructure.tokens.jwt;
 
 import com.chronicare.platform.iam.application.internal.outboundservices.tokens.TokenService;
+import com.chronicare.platform.iam.domain.model.aggregates.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
@@ -40,20 +41,54 @@ public class JwtTokenService implements TokenService {
 
     @Override
     public String generateToken(String username, String role) {
+        return generateTokenWithClaims(username, role, null, null, null);
+    }
+
+    /**
+     * Generate token with full user claims for Hospital Admin API
+     */
+    public String generateTokenWithClaims(String email, String role, Long userId, String name, Long tenantId) {
         SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         Date now = new Date();
         Date expiration = DateUtils.addDays(now, expirationDays);
+        
+        // El subject (sub) debe ser String, usamos el userId como subject
+        String subject = userId != null ? String.valueOf(userId) : email;
+        
         var builder = Jwts.builder()
-                .subject(username)
+                .subject(subject)
                 .issuedAt(now)
                 .expiration(expiration)
                 .signWith(key);
         
         if (role != null) {
-            builder.claim("role", role);
+            builder.claim("role", role.toLowerCase());
         }
+        if (userId != null) {
+            builder.claim("userId", userId);
+        }
+        if (name != null) {
+            builder.claim("name", name);
+        }
+        if (tenantId != null) {
+            builder.claim("tenantId", tenantId);
+        }
+        builder.claim("email", email);
         
         return builder.compact();
+    }
+
+    /**
+     * Generate token from User entity with all claims
+     */
+    public String generateTokenFromUser(User user) {
+        return generateTokenWithClaims(
+            user.getEmailAddress(),
+            user.getRole().getName(),
+            user.getId(),
+            user.getName(),
+            user.getTenantId()
+        );
     }
 
     @Override
@@ -79,7 +114,10 @@ public class JwtTokenService implements TokenService {
     @Override
     public String getUsernameFromToken(String token) {
         SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload().getSubject();
+        var claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+        // Retornar el email desde el claim, ya que el subject es el userId
+        String email = claims.get("email", String.class);
+        return email != null ? email : claims.getSubject();
     }
 
     public String getBearerTokenFrom(HttpServletRequest token) {

@@ -59,10 +59,18 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:4200")); // Allow Frontend
+        // Permitir múltiples orígenes del frontend
+        configuration.setAllowedOrigins(List.of(
+            "http://localhost:4200",
+            "http://localhost:4201",
+            "http://127.0.0.1:4200",
+            "http://127.0.0.1:4201"
+        ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
@@ -77,6 +85,9 @@ public class SecurityConfig {
             .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
+                // ════════════════════════════════════════════════════════════════
+                // ENDPOINTS PÚBLICOS (sin autenticación)
+                // ════════════════════════════════════════════════════════════════
                 .requestMatchers(
                     "/api/v1/authentication/**",
                     "/v3/api-docs/**",
@@ -85,7 +96,19 @@ public class SecurityConfig {
                     "/swagger-resources/**",
                     "/webjars/**"
                 ).permitAll()
-                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/tenants").permitAll() // Allow Tenant creation during registration
+                // Subscription Plans - PÚBLICO (necesario ver planes antes de registrarse)
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/subscriptionPlans/**").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/subscriptionPlans").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/subscription-plans/**").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/subscription-plans").permitAll()
+                // Tenant creation - PÚBLICO (para registro de hospital)
+                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/tenants").permitAll()
+                // Doctors list - PÚBLICO (para mostrar lista de doctores disponibles)
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/doctors").permitAll()
+                
+                // ════════════════════════════════════════════════════════════════
+                // ENDPOINTS PROTEGIDOS (requieren autenticación)
+                // ════════════════════════════════════════════════════════════════
                 .anyRequest().authenticated()
             );
         

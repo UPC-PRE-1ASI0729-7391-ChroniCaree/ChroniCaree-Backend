@@ -22,6 +22,8 @@ public class Patient extends AuditableAbstractAggregateRoot<Patient> {
     private Dni dni;
 
     private Long userId;
+    private Long tenantId;
+    private Long assignedDoctorId;
     private String firstName;
     private String lastName;
     private String email;

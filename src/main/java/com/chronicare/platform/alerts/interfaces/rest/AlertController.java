@@ -1,83 +1,235 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.chronicare.platform.alerts.interfaces.rest;
 
-import com.chronicare.platform.alerts.application.services.AlertService;
 import com.chronicare.platform.alerts.domain.model.aggregates.Alert;
+import com.chronicare.platform.alerts.domain.model.commands.AcknowledgeAlertCommand;
+import com.chronicare.platform.alerts.domain.model.commands.DismissAlertCommand;
+import com.chronicare.platform.alerts.domain.model.commands.EscalateAlertCommand;
+import com.chronicare.platform.alerts.domain.model.commands.ResolveAlertCommand;
+import com.chronicare.platform.alerts.domain.model.queries.GetAlertByIdQuery;
+import com.chronicare.platform.alerts.domain.model.queries.GetAlertsByDoctorIdQuery;
+import com.chronicare.platform.alerts.domain.model.queries.GetAlertsByPatientIdQuery;
+import com.chronicare.platform.alerts.domain.model.queries.GetAlertsByTenantIdQuery;
+import com.chronicare.platform.alerts.domain.services.AlertCommandService;
+import com.chronicare.platform.alerts.domain.services.AlertQueryService;
+import com.chronicare.platform.alerts.interfaces.rest.resources.*;
+import com.chronicare.platform.alerts.interfaces.rest.transform.AlertResourceFromEntityAssembler;
+import com.chronicare.platform.alerts.interfaces.rest.transform.CreateAlertCommandFromResourceAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * REST Controller for Alert operations following DDD pattern
+ */
 @RestController
-@RequestMapping("/api/v1/alerts")
+@RequestMapping(value = "/api/v1/alerts", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Alerts", description = "Alert management API")
 public class AlertController {
 
-    private final AlertService alertService;
+    private final AlertCommandService alertCommandService;
+    private final AlertQueryService alertQueryService;
 
-    public AlertController(AlertService alertService) {
-        this.alertService = alertService;
+    public AlertController(AlertCommandService alertCommandService, AlertQueryService alertQueryService) {
+        this.alertCommandService = alertCommandService;
+        this.alertQueryService = alertQueryService;
     }
 
-    @GetMapping
-    @Operation(summary = "List all alerts")
-    public ResponseEntity<List<Alert>> getAllAlerts() {
-        return ResponseEntity.ok(alertService.getAllAlerts());
+    // ==================== CREATE ====================
+    
+    @PostMapping
+    @Operation(summary = "Create new alert")
+    public ResponseEntity<AlertResource> createAlert(@RequestBody CreateAlertResource resource) {
+        var command = CreateAlertCommandFromResourceAssembler.toCommandFromResource(resource);
+        Alert alert = alertCommandService.handle(command);
+        return new ResponseEntity<>(AlertResourceFromEntityAssembler.toResourceFromEntity(alert), HttpStatus.CREATED);
     }
 
-    @GetMapping("/{id}")
+    // ==================== READ ====================
+    
+    @GetMapping("/{alertId}")
     @Operation(summary = "Get alert by ID")
-    public ResponseEntity<Alert> getAlertById(@PathVariable Long id) {
-        Optional<Alert> oAlert = alertService.getAlertById(id);
-        if (oAlert.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(oAlert.get());
+    public ResponseEntity<AlertResource> getAlertById(@PathVariable Long alertId) {
+        var query = new GetAlertByIdQuery(alertId);
+        Optional<Alert> result = alertQueryService.handle(query);
+        return result
+            .map(alert -> ResponseEntity.ok(AlertResourceFromEntityAssembler.toResourceFromEntity(alert)))
+            .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/patient/{patientId}")
     @Operation(summary = "Get alerts by patient ID")
-    public ResponseEntity<List<Alert>> getAlertsByPatientId(@PathVariable String patientId) {
-        return ResponseEntity.ok(alertService.getAlertsByPatientId(patientId));
+    public ResponseEntity<List<AlertResource>> getAlertsByPatientId(
+            @PathVariable Long patientId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String severity) {
+        
+        var query = new GetAlertsByPatientIdQuery(patientId, status, severity, null, 0, 100);
+        List<Alert> alerts = alertQueryService.handle(query);
+        
+        List<AlertResource> resources = alerts.stream()
+            .map(AlertResourceFromEntityAssembler::toResourceFromEntity)
+            .toList();
+        
+        return ResponseEntity.ok(resources);
     }
 
-    @PostMapping
-    @Operation(summary = "Create new alert")
-    public ResponseEntity<Alert> createAlert(@RequestBody Alert alert) {
-        Alert created = alertService.createAlert(alert);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    @GetMapping("/doctor/{doctorId}")
+    @Operation(summary = "Get alerts by doctor ID")
+    public ResponseEntity<List<AlertResource>> getAlertsByDoctorId(
+            @PathVariable Long doctorId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String severity,
+            @RequestParam(required = false) Long patientId,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "20") Integer limit) {
+        
+        var query = new GetAlertsByDoctorIdQuery(doctorId, status, severity, null, patientId, page, limit, "createdAt DESC");
+        var alertPage = alertQueryService.handle(query);
+        
+        List<AlertResource> resources = alertPage.getContent().stream()
+            .map(AlertResourceFromEntityAssembler::toResourceFromEntity)
+            .toList();
+        
+        return ResponseEntity.ok(resources);
     }
 
-    @PutMapping("/{id}")
-    @Operation(summary = "Update alert by ID")
-    public ResponseEntity<Alert> updateAlert(@PathVariable Long id, @RequestBody Alert alert) {
-
-        Optional<Alert> oAlert = alertService.getAlertById(id);
-
-        if (oAlert.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(alertService.updateAlert(id, alert));
+    @GetMapping("/tenant/{tenantId}")
+    @Operation(summary = "Get alerts by tenant ID")
+    public ResponseEntity<List<AlertResource>> getAlertsByTenantId(
+            @PathVariable Long tenantId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String severity) {
+        
+        var query = new GetAlertsByTenantIdQuery(tenantId, status, severity, null, 0, 100);
+        List<Alert> alerts = alertQueryService.handle(query);
+        
+        List<AlertResource> resources = alerts.stream()
+            .map(AlertResourceFromEntityAssembler::toResourceFromEntity)
+            .toList();
+        
+        return ResponseEntity.ok(resources);
     }
 
-    @DeleteMapping("/{id}")
+    // ==================== ACTIONS ====================
+    
+    @PutMapping("/{alertId}/acknowledge")
+    @Operation(summary = "Acknowledge an alert")
+    public ResponseEntity<AlertResource> acknowledgeAlert(
+            @PathVariable Long alertId,
+            @RequestParam Long userId,
+            @RequestBody(required = false) AcknowledgeAlertResource resource) {
+        
+        String notes = resource != null ? resource.notes() : null;
+        var command = new AcknowledgeAlertCommand(alertId, userId, notes);
+        Optional<Alert> result = alertCommandService.handle(command);
+        
+        return result
+            .map(alert -> ResponseEntity.ok(AlertResourceFromEntityAssembler.toResourceFromEntity(alert)))
+            .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{alertId}/resolve")
+    @Operation(summary = "Resolve an alert")
+    public ResponseEntity<AlertResource> resolveAlert(
+            @PathVariable Long alertId,
+            @RequestParam Long userId,
+            @RequestBody(required = false) ResolveAlertResource resource) {
+        
+        String notes = resource != null ? resource.notes() : null;
+        String action = resource != null ? resource.resolutionAction() : null;
+        var command = new ResolveAlertCommand(alertId, userId, notes, action);
+        Optional<Alert> result = alertCommandService.handle(command);
+        
+        return result
+            .map(alert -> ResponseEntity.ok(AlertResourceFromEntityAssembler.toResourceFromEntity(alert)))
+            .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{alertId}/escalate")
+    @Operation(summary = "Escalate an alert")
+    public ResponseEntity<AlertResource> escalateAlert(
+            @PathVariable Long alertId,
+            @RequestBody EscalateAlertResource resource) {
+        
+        var command = new EscalateAlertCommand(alertId, resource.escalateTo(), null, resource.reason());
+        Optional<Alert> result = alertCommandService.handle(command);
+        
+        return result
+            .map(alert -> ResponseEntity.ok(AlertResourceFromEntityAssembler.toResourceFromEntity(alert)))
+            .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{alertId}/dismiss")
+    @Operation(summary = "Dismiss an alert")
+    public ResponseEntity<AlertResource> dismissAlert(
+            @PathVariable Long alertId,
+            @RequestParam Long userId,
+            @RequestBody(required = false) DismissAlertResource resource) {
+        
+        String reason = resource != null ? resource.reason() : null;
+        var command = new DismissAlertCommand(alertId, userId, reason);
+        Optional<Alert> result = alertCommandService.handle(command);
+        
+        return result
+            .map(alert -> ResponseEntity.ok(AlertResourceFromEntityAssembler.toResourceFromEntity(alert)))
+            .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    // ==================== DELETE ====================
+    
+    @DeleteMapping("/{alertId}")
     @Operation(summary = "Delete alert by ID")
-    public ResponseEntity<Void> deleteAlert(@PathVariable Long id) {
-        Optional<Alert> oAlert = alertService.getAlertById(id);
-        if (oAlert.isEmpty()) {
+    public ResponseEntity<Void> deleteAlert(@PathVariable Long alertId) {
+        var query = new GetAlertByIdQuery(alertId);
+        Optional<Alert> existing = alertQueryService.handle(query);
+        
+        if (existing.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        alertService.deleteAlert(id);
+        
+        alertCommandService.deleteAlert(alertId);
         return ResponseEntity.noContent().build();
     }
 
+    // ==================== STATS ====================
+    
+    @GetMapping("/tenant/{tenantId}/stats")
+    @Operation(summary = "Get alert statistics for a tenant")
+    public ResponseEntity<AlertStatsResource> getAlertStats(@PathVariable Long tenantId) {
+        // Get counts using query service methods
+        long activeCount = alertQueryService.countActiveAlertsByTenantId(tenantId);
+        long criticalCount = alertQueryService.countCriticalAlertsByTenantId(tenantId);
+        
+        // Get detailed counts
+        var activeQuery = new GetAlertsByTenantIdQuery(tenantId, "ACTIVE", null, null, 0, 1000);
+        var acknowledgedQuery = new GetAlertsByTenantIdQuery(tenantId, "ACKNOWLEDGED", null, null, 0, 1000);
+        var resolvedQuery = new GetAlertsByTenantIdQuery(tenantId, "RESOLVED", null, null, 0, 1000);
+        var escalatedQuery = new GetAlertsByTenantIdQuery(tenantId, "ESCALATED", null, null, 0, 1000);
+        
+        int acknowledgedCount = alertQueryService.handle(acknowledgedQuery).size();
+        int resolvedCount = alertQueryService.handle(resolvedQuery).size();
+        int escalatedCount = alertQueryService.handle(escalatedQuery).size();
+        
+        // Get high severity count from active alerts
+        var highQuery = new GetAlertsByTenantIdQuery(tenantId, "ACTIVE", "HIGH", null, 0, 1000);
+        int highCount = alertQueryService.handle(highQuery).size();
+        
+        AlertStatsResource stats = new AlertStatsResource(
+            (int) activeCount,
+            acknowledgedCount,
+            resolvedCount,
+            escalatedCount,
+            (int) criticalCount,
+            highCount,
+            (int) activeCount + acknowledgedCount + escalatedCount // total pending
+        );
+        
+        return ResponseEntity.ok(stats);
+    }
 }

@@ -7,6 +7,8 @@ import com.chronicare.platform.tenants.domain.commands.CreateTenantCommand;
 import com.chronicare.platform.tenants.domain.commands.DeleteTenantCommand;
 import com.chronicare.platform.tenants.domain.commands.UpdateTenantCommand;
 import com.chronicare.platform.tenants.domain.valueobjects.TenantName;
+import com.chronicare.platform.doctors.infrastructure.persistence.jpa.repositories.DoctorRepository;
+import com.chronicare.platform.patients.domain.repository.PatientRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
@@ -25,9 +27,13 @@ import java.util.stream.Collectors;
 public class TenantController {
 
     private final TenantService tenantService;
+    private final DoctorRepository doctorRepository;
+    private final PatientRepository patientRepository;
 
-    public TenantController(TenantService tenantService) {
+    public TenantController(TenantService tenantService, DoctorRepository doctorRepository, PatientRepository patientRepository) {
         this.tenantService = tenantService;
+        this.doctorRepository = doctorRepository;
+        this.patientRepository = patientRepository;
     }
 
     record TenantResponse(
@@ -67,13 +73,15 @@ public class TenantController {
         }
     }
 
-    record UpdateTenantRequest(String name) {
-        public UpdateTenantRequest {
-            if (name == null || name.isBlank()) {
-                throw new IllegalArgumentException("name cannot be null or blank");
-            }
-        }
-    }
+    record UpdateTenantRequest(
+        String name,
+        String email,
+        String address,
+        String phone,
+        String status,
+        Long subscriptionId,
+        TenantSettings settings
+    ) {}
 
     private TenantResponse toResponse(Tenant t) {
         return new TenantResponse(
@@ -110,6 +118,39 @@ public class TenantController {
                 .map(this::toResponse)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/by-admin/{userId}")
+    @Operation(summary = "Get tenant by Admin User ID")
+    public ResponseEntity<TenantResponse> getTenantByAdminUserId(@PathVariable Long userId) {
+        java.util.logging.Logger logger = java.util.logging.Logger.getLogger(TenantController.class.getName());
+        logger.info("========== TenantController: GET /api/v1/tenants/by-admin/" + userId + " ==========");
+        logger.info("Calling tenantService.getTenantByAdminUserId(" + userId + ")");
+        
+        var result = tenantService.getTenantByAdminUserId(userId)
+                .map(this::toResponse)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> {
+                    logger.warning("❌ Tenant not found for admin user ID: " + userId + ", returning 404");
+                    return ResponseEntity.notFound().build();
+                });
+        
+        if (result.getStatusCode().is2xxSuccessful()) {
+            logger.info("✓ Returning tenant data with HTTP 200");
+        }
+        logger.info("======================================================================");
+        
+        return result;
+    }
+
+    record DashboardStats(long totalDoctors, long totalPatients, long activeAlerts) {}
+
+    @GetMapping("/{id}/dashboard-stats")
+    @Operation(summary = "Get dashboard stats")
+    public ResponseEntity<DashboardStats> getDashboardStats(@PathVariable Long id) {
+        long doctors = doctorRepository.countByTenantId(id);
+        long patients = patientRepository.countByTenantId(id);
+        return ResponseEntity.ok(new DashboardStats(doctors, patients, 0));
     }
 
     @PostMapping
@@ -152,7 +193,20 @@ public class TenantController {
     @PutMapping("/{id}")
     @Operation(summary = "Update tenant by ID")
     public ResponseEntity<TenantResponse> updateTenant(@PathVariable Long id, @RequestBody UpdateTenantRequest req) {
-        UpdateTenantCommand cmd = new UpdateTenantCommand(id, new TenantName(req.name()));
+        TenantName tenantName = (req.name() != null && !req.name().isBlank()) ? new TenantName(req.name()) : null;
+        
+        UpdateTenantCommand cmd = new UpdateTenantCommand(
+            id, 
+            tenantName,
+            req.email(),
+            req.address(),
+            req.phone(),
+            req.status(),
+            req.subscriptionId(),
+            req.settings() != null ? req.settings().allowIndependentDoctors() : null,
+            req.settings() != null ? req.settings().requirePatientApproval() : null,
+            req.settings() != null ? req.settings().maxDoctors() : null
+        );
         Tenant updated = tenantService.updateTenant(cmd);
         return ResponseEntity.ok(toResponse(updated));
     }

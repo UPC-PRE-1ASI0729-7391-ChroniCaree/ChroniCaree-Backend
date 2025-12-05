@@ -6,6 +6,7 @@ import com.chronicare.platform.patients.domain.commands.DeletePatientCommand;
 import com.chronicare.platform.patients.domain.commands.UpdatePatientCommand;
 import com.chronicare.platform.patients.domain.queries.GetAllPatientsQuery;
 import com.chronicare.platform.patients.domain.queries.GetPatientByIdQuery;
+import com.chronicare.platform.patients.domain.queries.GetPatientByUserIdQuery;
 import com.chronicare.platform.patients.domain.services.PatientCommandService;
 import com.chronicare.platform.patients.domain.services.PatientQueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -81,6 +82,45 @@ public class PatientController {
         return patientQueryService.handle(new GetPatientByIdQuery(id))
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Get patient by User ID
+     * @param userId The user ID
+     * @return The patient if found, or a 404 response if not found
+     */
+    @GetMapping("/by-user/{userId}")
+    @Operation(summary = "Get patient by User ID", description = "Retrieve a specific patient by their User ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Patient found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "Patient not found")
+    })
+    public ResponseEntity<Patient> getPatientByUserId(@PathVariable Long userId) {
+        return patientQueryService.handle(new GetPatientByUserIdQuery(userId))
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Get patients by Tenant ID
+     * @param tenantId The tenant ID
+     * @param page Page number (0-indexed)
+     * @param limit Number of items per page
+     * @return A paginated list of patients belonging to the tenant
+     */
+    @GetMapping("/by-tenant/{tenantId}")
+    @Operation(summary = "Get patients by Tenant ID", description = "Retrieve all patients belonging to a specific tenant (hospital)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Patients retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    public ResponseEntity<?> getPatientsByTenantId(
+            @PathVariable Long tenantId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int limit) {
+        var patients = patientQueryService.handleByTenantId(tenantId, page, limit);
+        return ResponseEntity.ok(patients);
     }
 
     record CreatePatientRequest(

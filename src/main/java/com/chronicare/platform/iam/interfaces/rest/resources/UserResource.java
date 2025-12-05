@@ -8,6 +8,8 @@ public record UserResource(
     Long id,
     String email,
     String name,
+    String firstName,
+    String lastName,
     String role,
     Long tenantId,
     Boolean isVerified,

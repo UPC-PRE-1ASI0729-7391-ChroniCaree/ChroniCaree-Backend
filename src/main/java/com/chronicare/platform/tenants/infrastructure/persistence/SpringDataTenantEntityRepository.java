@@ -20,4 +20,5 @@ import org.springframework.stereotype.Repository;
 public interface SpringDataTenantEntityRepository extends JpaRepository<Tenant, Long> {
 
     Optional<Tenant> findByName(String name);
+    Optional<Tenant> findByAdminUserId(Long adminUserId);
 }

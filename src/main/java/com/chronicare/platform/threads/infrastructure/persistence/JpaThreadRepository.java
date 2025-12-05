@@ -18,4 +18,7 @@ public interface JpaThreadRepository extends JpaRepository<Thread, String>, Thre
     
     @Override
     List<Thread> findByPatientId(String patientId);
+
+    @Override
+    List<Thread> findByDoctorId(String doctorId);
 }

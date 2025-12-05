@@ -21,6 +21,8 @@ public interface TenantRepository {
 
     Optional<Tenant> findByName(String name);
 
+    Optional<Tenant> findByAdminUserId(Long adminUserId);
+
     Tenant save(Tenant tenant);
 
     void deleteById(Long id);

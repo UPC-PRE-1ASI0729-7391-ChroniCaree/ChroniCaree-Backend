@@ -1,50 +1,161 @@
 package com.chronicare.platform.doctors.domain.model.aggregates;
 
+import com.chronicare.platform.doctors.domain.model.valueobjects.*;
+import com.chronicare.platform.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Entidad que representa a un médico dentro del sistema.
+ * Doctor Aggregate Root
+ * Represents a doctor in the system (independent or tenant-based)
  */
 @Entity
 @Table(name = "doctors")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class Doctor {
+@Getter
+public class Doctor extends AuditableAbstractAggregateRoot<Doctor> {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false)
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(nullable = true)
+    @Column(name = "tenant_id", nullable = true)
     private Long tenantId;
 
-    @Column(nullable = false)
-    private boolean isIndependent;
+    @Embedded
+    @AttributeOverrides({
+        @AttributeOverride(name = "firstName", column = @Column(name = "first_name", nullable = false, length = 100)),
+        @AttributeOverride(name = "lastName", column = @Column(name = "last_name", nullable = false, length = 100))
+    })
+    private PersonName name;
 
-    @Column(nullable = false, length = 100)
-    private String firstName;
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "dni", nullable = false, unique = true, length = 20))
+    private DNI dni;
 
-    @Column(nullable = false, length = 100)
-    private String lastName;
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "specialty", nullable = false, length = 100))
+    private Specialty specialty;
 
-    @Column(nullable = false, unique = true, length = 20)
-    private String dni;
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "license_number", nullable = false, unique = true, length = 20))
+    private LicenseNumber licenseNumber;
 
-    @Column(nullable = false, length = 100)
-    private String specialty;
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "phone", nullable = false, length = 20))
+    private PhoneNumber phone;
 
-    @Column(nullable = false, unique = true, length = 50)
-    private String licenseNumber;
+    @Column(name = "is_independent", nullable = false)
+    private Boolean isIndependent;
 
-    @Column(nullable = false, length = 20)
-    private String phone;
+    @Column(name = "is_verified", nullable = false)
+    private Boolean isVerified;
 
-    @Column(nullable = false)
-    private boolean isVerified;
+    @Column(name = "accepting_patients", nullable = false)
+    private Boolean acceptingPatients;
+
+    @Column(name = "consultation_fee", nullable = true)
+    private Double consultationFee;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "doctor_languages", joinColumns = @JoinColumn(name = "doctor_id"))
+    @Column(name = "language")
+    private List<String> languages = new ArrayList<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "doctor_education", joinColumns = @JoinColumn(name = "doctor_id"))
+    private List<Education> education = new ArrayList<>();
+
+    protected Doctor() {
+        this.isVerified = false;
+        this.acceptingPatients = true;
+        this.languages = new ArrayList<>();
+        this.education = new ArrayList<>();
+    }
+
+    public Doctor(
+        Long userId,
+        Long tenantId,
+        PersonName name,
+        DNI dni,
+        Specialty specialty,
+        LicenseNumber licenseNumber,
+        PhoneNumber phone,
+        Double consultationFee,
+        List<String> languages,
+        List<Education> education
+    ) {
+        this();
+        this.userId = userId;
+        this.tenantId = tenantId;
+        this.name = name;
+        this.dni = dni;
+        this.specialty = specialty;
+        this.licenseNumber = licenseNumber;
+        this.phone = phone;
+        this.isIndependent = (tenantId == null);
+        this.consultationFee = this.isIndependent ? consultationFee : null;
+        this.languages = languages != null ? new ArrayList<>(languages) : new ArrayList<>();
+        this.education = education != null ? new ArrayList<>(education) : new ArrayList<>();
+    }
+
+    // Business methods
+    public void verify() {
+        this.isVerified = true;
+    }
+
+    public void unverify() {
+        this.isVerified = false;
+        this.acceptingPatients = false;
+    }
+
+    public void enablePatientAcceptance() {
+        if (!this.isVerified) {
+            throw new IllegalStateException("Cannot accept patients: doctor is not verified");
+        }
+        this.acceptingPatients = true;
+    }
+
+    public void disablePatientAcceptance() {
+        this.acceptingPatients = false;
+    }
+
+    public void updateProfile(
+        PersonName name,
+        PhoneNumber phone,
+        Specialty specialty,
+        Double consultationFee,
+        List<String> languages
+    ) {
+        this.name = name;
+        this.phone = phone;
+        this.specialty = specialty;
+        if (this.isIndependent && consultationFee != null) {
+            this.consultationFee = consultationFee;
+        }
+        if (languages != null) {
+            this.languages = new ArrayList<>(languages);
+        }
+    }
+
+    public void addEducation(Education education) {
+        this.education.add(education);
+    }
+
+    public void removeEducation(Education education) {
+        this.education.remove(education);
+    }
+
+    public String getFullName() {
+        return "Dr. " + name.getFullName();
+    }
+
+    public boolean canAcceptPatients() {
+        return isVerified && acceptingPatients;
+    }
+
+    public boolean belongsToTenant() {
+        return tenantId != null;
+    }
 }

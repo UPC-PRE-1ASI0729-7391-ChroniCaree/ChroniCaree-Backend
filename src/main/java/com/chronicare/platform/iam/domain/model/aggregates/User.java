@@ -30,6 +30,12 @@ public class User extends AuditableAbstractAggregateRoot<User> {
     @Column(nullable = false)
     private String password;
 
+    @Column(name = "first_name")
+    private String firstName;
+
+    @Column(name = "last_name")
+    private String lastName;
+
     @NotBlank(message = "Name is required")
     @Column(nullable = false)
     private String name;
@@ -57,6 +63,15 @@ public class User extends AuditableAbstractAggregateRoot<User> {
         this.email = new EmailAddress(email);
         this.password = password;
         this.name = name;
+        // Parse name into firstName/lastName if it contains space
+        if (name != null && name.contains(" ")) {
+            String[] parts = name.split(" ", 2);
+            this.firstName = parts[0];
+            this.lastName = parts.length > 1 ? parts[1] : "";
+        } else {
+            this.firstName = name;
+            this.lastName = "";
+        }
         this.role = role;
         this.tenantId = tenantId;
         this.isVerified = false;
@@ -147,12 +162,24 @@ public class User extends AuditableAbstractAggregateRoot<User> {
         return name;
     }
 
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
     public Roles getRole() {
         return role;
     }
 
     public Long getTenantId() {
         return tenantId;
+    }
+
+    public void setTenantId(Long tenantId) {
+        this.tenantId = tenantId;
     }
 
     public Boolean getIsVerified() {

@@ -35,6 +35,10 @@ public class ThreadService {
     public List<Thread> getThreadsByPatientId(String patientId) {
         return threadRepository.findByPatientId(patientId);
     }
+
+    public List<Thread> getThreadsByDoctorId(String doctorId) {
+        return threadRepository.findByDoctorId(doctorId);
+    }
     
     public Thread createThread(Thread thread) {
         return threadRepository.save(thread);
