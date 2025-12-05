@@ -1,5 +1,5 @@
 # Build stage
-FROM eclipse-temurin:25-jdk AS build
+FROM eclipse-temurin:21-jdk AS build
 
 WORKDIR /app
 
@@ -9,20 +9,18 @@ COPY mvnw pom.xml ./
 # Convert line endings for Windows users and make executable
 RUN sed -i 's/\r$//' mvnw && chmod +x mvnw
 
-# Forzar el uso de Java 25
-ENV JAVA_HOME=/opt/java/openjdk
-ENV PATH="${JAVA_HOME}/bin:${PATH}"
+# Ensure JDK 21 from the base image is used
 
 # Download dependencies
 RUN ./mvnw dependency:go-offline -B
 
 COPY src ./src
 
-# Build con flags específicos para Java 25
-RUN ./mvnw clean package -DskipTests -Dmaven.compiler.release=25
+# Build
+RUN ./mvnw clean package -DskipTests -Dmaven.compiler.release=21
 
 # Run stage
-FROM eclipse-temurin:25-jre
+FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
