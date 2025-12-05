@@ -11,10 +11,12 @@ public class RegisterUserCommandFromResourceAssembler {
     
     public static RegisterUserCommand toCommandFromResource(CreateUserResource resource) {
         var role = Roles.fromName(resource.role());
+        // Use getFullName() to support both name and firstName/lastName formats
+        String fullName = resource.getFullName();
         return new RegisterUserCommand(
             resource.email(),
             resource.password(),
-            resource.name(),
+            fullName,
             role,
             resource.tenantId()
         );

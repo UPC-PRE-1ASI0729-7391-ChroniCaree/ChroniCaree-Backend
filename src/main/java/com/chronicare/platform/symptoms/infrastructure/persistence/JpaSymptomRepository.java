@@ -6,7 +6,7 @@ package com.chronicare.platform.symptoms.infrastructure.persistence;
 
  
 import com.chronicare.platform.patients.domain.model.aggregates.Patient;
-import com.chronicare.platform.symptoms.domain.aggregate.Symptom;
+import com.chronicare.platform.symptoms.domain.model.aggregates.Symptom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

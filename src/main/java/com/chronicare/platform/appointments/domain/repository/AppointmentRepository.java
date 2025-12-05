@@ -4,7 +4,7 @@
  */
 package com.chronicare.platform.appointments.domain.repository;
 
-import com.chronicare.platform.appointments.domain.model.Appointment;
+import com.chronicare.platform.appointments.domain.model.aggregates.Appointment;
 import java.util.List;
 import java.util.Optional;
 

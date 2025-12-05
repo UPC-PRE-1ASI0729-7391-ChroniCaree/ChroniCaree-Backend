@@ -14,11 +14,18 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.List;
+
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
@@ -50,13 +57,37 @@ public class SecurityConfig {
     }
 
     @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        // Permitir múltiples orígenes del frontend
+        configuration.setAllowedOrigins(List.of(
+            "http://localhost:4200",
+            "http://localhost:4201",
+            "http://127.0.0.1:4200",
+            "http://127.0.0.1:4201"
+        ));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.disable()) // Disable CORS for now or configure it properly if needed
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
+                // ════════════════════════════════════════════════════════════════
+                // ENDPOINTS PÚBLICOS (sin autenticación)
+                // ════════════════════════════════════════════════════════════════
                 .requestMatchers(
                     "/api/v1/authentication/**",
                     "/v3/api-docs/**",
@@ -65,6 +96,21 @@ public class SecurityConfig {
                     "/swagger-resources/**",
                     "/webjars/**"
                 ).permitAll()
+                // Subscription Plans - PÚBLICO (necesario ver planes antes de registrarse)
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/subscriptionPlans/**").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/subscriptionPlans").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/subscription-plans/**").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/subscription-plans").permitAll()
+                // Tenant creation - PÚBLICO (para registro de hospital)
+                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/tenants").permitAll()
+                // Doctors list - PÚBLICO (para mostrar lista de doctores disponibles)
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/doctors").permitAll()
+                // Check email - PÚBLICO (para validar si email existe durante invitación)
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/users/check-email").permitAll()
+                
+                // ════════════════════════════════════════════════════════════════
+                // ENDPOINTS PROTEGIDOS (requieren autenticación)
+                // ════════════════════════════════════════════════════════════════
                 .anyRequest().authenticated()
             );
         

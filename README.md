@@ -28,11 +28,32 @@ Cada módulo incluye:
 ### 🏢 Tenants
 Gestión de instituciones médicas o clínicas.
 - **Endpoints**
-  - `GET /api/tenants` — listar todos
-  - `GET /api/tenants/{id}` — obtener por ID
-  - `POST /api/tenants` — crear tenant
-  - `PUT /api/tenants/{id}` — actualizar
-  - `DELETE /api/tenants/{id}` — eliminar
+  - `GET /api/v1/tenants` — listar todos
+  - `GET /api/v1/tenants/{id}` — obtener por ID
+  - `POST /api/v1/tenants` — crear tenant (Permite acceso público para registro)
+  - `PUT /api/v1/tenants/{id}` — actualizar
+  - `DELETE /api/v1/tenants/{id}` — eliminar
+
+#### Frontend Integration (Create Tenant)
+El endpoint `POST /api/v1/tenants` espera el siguiente payload JSON:
+```json
+{
+  "adminUserId": 1,
+  "name": "Hospital Central",
+  "email": "contact@hospital.com",
+  "address": "Av. Principal 123",
+  "phone": "+51 999 999 999",
+  "status": "pending_subscription",
+  "subscriptionId": null,
+  "registrationDate": "2025-11-27T20:38:28.256Z",
+  "settings": {
+    "allowIndependentDoctors": false,
+    "requirePatientApproval": true,
+    "maxDoctors": 5
+  }
+}
+```
+**Nota:** La fecha `registrationDate` debe enviarse en formato ISO 8601.
 
 ### 👤 Users
 Usuarios del sistema (pacientes, doctores, administradores de hospital).

@@ -19,6 +19,8 @@ public interface ThreadRepository {
 
     List<Thread> findByPatientId(String patientId);
 
+    List<Thread> findByDoctorId(String doctorId);
+
     Thread save(Thread thread);
 
     void deleteById(Long id);

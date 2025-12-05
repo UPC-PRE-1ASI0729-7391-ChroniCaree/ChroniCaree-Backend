@@ -8,7 +8,6 @@ import com.chronicare.platform.shared.domain.model.aggregates.AuditableAbstractA
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
 
 import java.time.LocalDateTime;
 
@@ -19,7 +18,6 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "users")
-@Getter
 public class User extends AuditableAbstractAggregateRoot<User> {
 
     @Embedded
@@ -32,12 +30,18 @@ public class User extends AuditableAbstractAggregateRoot<User> {
     @Column(nullable = false)
     private String password;
 
+    @Column(name = "first_name")
+    private String firstName;
+
+    @Column(name = "last_name")
+    private String lastName;
+
     @NotBlank(message = "Name is required")
     @Column(nullable = false)
     private String name;
 
-    @Enumerated(EnumType.STRING)
     @NotNull(message = "Role is required")
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Roles role;
 
@@ -59,6 +63,15 @@ public class User extends AuditableAbstractAggregateRoot<User> {
         this.email = new EmailAddress(email);
         this.password = password;
         this.name = name;
+        // Parse name into firstName/lastName if it contains space
+        if (name != null && name.contains(" ")) {
+            String[] parts = name.split(" ", 2);
+            this.firstName = parts[0];
+            this.lastName = parts.length > 1 ? parts[1] : "";
+        } else {
+            this.firstName = name;
+            this.lastName = "";
+        }
         this.role = role;
         this.tenantId = tenantId;
         this.isVerified = false;
@@ -135,5 +148,45 @@ public class User extends AuditableAbstractAggregateRoot<User> {
      */
     public String getEmailAddress() {
         return email.address();
+    }
+
+    public EmailAddress getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public Roles getRole() {
+        return role;
+    }
+
+    public Long getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(Long tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    public Boolean getIsVerified() {
+        return isVerified;
+    }
+
+    public Boolean getTwoFactorEnabled() {
+        return twoFactorEnabled;
     }
 }

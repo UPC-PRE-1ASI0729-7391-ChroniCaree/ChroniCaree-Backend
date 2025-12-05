@@ -13,6 +13,8 @@ public class UserResourceFromEntityAssembler {
             entity.getId(),
             entity.getEmailAddress(),
             entity.getName(),
+            entity.getFirstName(),
+            entity.getLastName(),
             entity.getRole().getName(),
             entity.getTenantId(),
             entity.getIsVerified(),

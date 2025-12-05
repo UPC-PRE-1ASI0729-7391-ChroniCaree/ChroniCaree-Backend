@@ -14,6 +14,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -38,9 +40,11 @@ import java.util.List;
  * </p>
  */
 @RestController
-@RequestMapping(value = "/api/v1/medical-records", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/records", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "MedicalRecords", description = "Medical records management API")
 public class MedicalRecordController {
+
+    private static final Logger logger = LoggerFactory.getLogger(MedicalRecordController.class);
 
     private final MedicalRecordCommandService medicalRecordCommandService;
     private final MedicalRecordQueryService medicalRecordQueryService;
@@ -67,7 +71,15 @@ public class MedicalRecordController {
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     public ResponseEntity<List<MedicalRecord>> getAllRecords() {
-        return ResponseEntity.ok(medicalRecordQueryService.handle(new GetAllMedicalRecordsQuery()));
+        try {
+            logger.info("Fetching all medical records");
+            List<MedicalRecord> records = medicalRecordQueryService.handle(new GetAllMedicalRecordsQuery());
+            logger.info("Found {} medical records", records.size());
+            return ResponseEntity.ok(records);
+        } catch (Exception ex) {
+            logger.error("Error fetching all medical records", ex);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(List.of());
+        }
     }
 
     /**
@@ -97,10 +109,24 @@ public class MedicalRecordController {
     @Operation(summary = "Get medical records by patient ID", description = "Retrieve all medical records for a specific patient")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Medical records retrieved successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
+            @ApiResponse(responseCode = "400", description = "Bad request - Invalid patient ID"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<List<MedicalRecord>> getRecordsByPatientId(@PathVariable Long patientId) {
-        return ResponseEntity.ok(medicalRecordQueryService.handle(new GetMedicalRecordsByPatientIdQuery(patientId)));
+        try {
+            if (patientId == null || patientId <= 0) {
+                logger.error("Invalid patient ID: {}", patientId);
+                return ResponseEntity.badRequest().build();
+            }
+            logger.info("Fetching medical records for patient ID: {}", patientId);
+            List<MedicalRecord> records = medicalRecordQueryService.handle(new GetMedicalRecordsByPatientIdQuery(patientId));
+            logger.info("Found {} medical records for patient ID: {}", records.size(), patientId);
+            return ResponseEntity.ok(records);
+        } catch (Exception ex) {
+            logger.error("Error fetching medical records for patient ID: {}", patientId, ex);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     /**
@@ -112,10 +138,24 @@ public class MedicalRecordController {
     @Operation(summary = "Get medical records by doctor ID", description = "Retrieve all medical records for a specific doctor")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Medical records retrieved successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
+            @ApiResponse(responseCode = "400", description = "Bad request - Invalid doctor ID"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<List<MedicalRecord>> getRecordsByDoctorId(@PathVariable Long doctorId) {
-        return ResponseEntity.ok(medicalRecordQueryService.handle(new GetMedicalRecordsByDoctorIdQuery(doctorId)));
+        try {
+            if (doctorId == null || doctorId <= 0) {
+                logger.error("Invalid doctor ID: {}", doctorId);
+                return ResponseEntity.badRequest().build();
+            }
+            logger.info("Fetching medical records for doctor ID: {}", doctorId);
+            List<MedicalRecord> records = medicalRecordQueryService.handle(new GetMedicalRecordsByDoctorIdQuery(doctorId));
+            logger.info("Found {} medical records for doctor ID: {}", records.size(), doctorId);
+            return ResponseEntity.ok(records);
+        } catch (Exception ex) {
+            logger.error("Error fetching medical records for doctor ID: {}", doctorId, ex);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     /**
@@ -156,7 +196,7 @@ public class MedicalRecordController {
         try {
             MedicalRecord updated = medicalRecordCommandService.handle(command);
             return ResponseEntity.ok(updated);
-        } catch (RuntimeException e) {
+        } catch (RuntimeException _) {
             return ResponseEntity.notFound().build();
         }
     }
@@ -177,7 +217,7 @@ public class MedicalRecordController {
         try {
             medicalRecordCommandService.handle(new DeleteMedicalRecordCommand(id));
             return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
+        } catch (RuntimeException _) {
             return ResponseEntity.notFound().build();
         }
     }

@@ -6,6 +6,7 @@ import com.chronicare.platform.patients.domain.commands.DeletePatientCommand;
 import com.chronicare.platform.patients.domain.commands.UpdatePatientCommand;
 import com.chronicare.platform.patients.domain.queries.GetAllPatientsQuery;
 import com.chronicare.platform.patients.domain.queries.GetPatientByIdQuery;
+import com.chronicare.platform.patients.domain.queries.GetPatientByUserIdQuery;
 import com.chronicare.platform.patients.domain.services.PatientCommandService;
 import com.chronicare.platform.patients.domain.services.PatientQueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -84,8 +85,63 @@ public class PatientController {
     }
 
     /**
+     * Get patient by User ID
+     * @param userId The user ID
+     * @return The patient if found, or a 404 response if not found
+     */
+    @GetMapping("/by-user/{userId}")
+    @Operation(summary = "Get patient by User ID", description = "Retrieve a specific patient by their User ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Patient found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "Patient not found")
+    })
+    public ResponseEntity<Patient> getPatientByUserId(@PathVariable Long userId) {
+        return patientQueryService.handle(new GetPatientByUserIdQuery(userId))
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Get patients by Tenant ID
+     * @param tenantId The tenant ID
+     * @param page Page number (0-indexed)
+     * @param limit Number of items per page
+     * @return A paginated list of patients belonging to the tenant
+     */
+    @GetMapping("/by-tenant/{tenantId}")
+    @Operation(summary = "Get patients by Tenant ID", description = "Retrieve all patients belonging to a specific tenant (hospital)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Patients retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    public ResponseEntity<?> getPatientsByTenantId(
+            @PathVariable Long tenantId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int limit) {
+        var patients = patientQueryService.handleByTenantId(tenantId, page, limit);
+        return ResponseEntity.ok(patients);
+    }
+
+    record CreatePatientRequest(
+        Long userId,
+        Long tenantId,      // Hospital/Clinic that manages this patient
+        String firstName,
+        String lastName,
+        String email,
+        String dni,
+        String birthDate,
+        String gender,
+        String phone,
+        String address,
+        String photoUrl,
+        Double weight,
+        Double height
+    ) {}
+
+    /**
      * Create a new patient
-     * @param command The {@link CreatePatientCommand} containing patient data
+     * @param request The {@link CreatePatientRequest} containing patient data
      * @return The created patient with 201 status
      */
     @PostMapping
@@ -95,15 +151,84 @@ public class PatientController {
             @ApiResponse(responseCode = "400", description = "Bad request - Invalid input data"),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-    public ResponseEntity<Patient> createPatient(@RequestBody CreatePatientCommand command) {
+    public ResponseEntity<Patient> createPatient(@RequestBody CreatePatientRequest request) {
+        CreatePatientCommand command = new CreatePatientCommand(
+            request.userId(),
+            request.tenantId(),
+            request.firstName(),
+            request.lastName(),
+            request.email(),
+            new com.chronicare.platform.patients.domain.valueobjects.Dni(request.dni()),
+            request.birthDate(),
+            request.gender(),
+            request.phone(),
+            request.address(),
+            request.photoUrl(),
+            request.weight(),
+            request.height()
+        );
         Patient created = patientCommandService.handle(command);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
     /**
+     * Assign a doctor to a patient
+     */
+    record AssignDoctorRequest(Long doctorId) {}
+
+    @PutMapping("/{patientId}/assign-doctor")
+    @Operation(summary = "Assign doctor to patient", description = "Assigns a doctor to manage a specific patient")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Doctor assigned successfully"),
+            @ApiResponse(responseCode = "404", description = "Patient not found"),
+            @ApiResponse(responseCode = "400", description = "Bad request")
+    })
+    public ResponseEntity<Patient> assignDoctorToPatient(
+            @PathVariable Long patientId,
+            @RequestBody AssignDoctorRequest request) {
+        var patient = patientQueryService.handle(new GetPatientByIdQuery(patientId));
+        if (patient.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Patient p = patient.get();
+        p.assignDoctor(request.doctorId());
+        Patient saved = patientCommandService.handleAssignDoctor(patientId, request.doctorId());
+        return ResponseEntity.ok(saved);
+    }
+
+    @DeleteMapping("/{patientId}/assign-doctor")
+    @Operation(summary = "Unassign doctor from patient", description = "Removes the assigned doctor from a patient")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Doctor unassigned successfully"),
+            @ApiResponse(responseCode = "404", description = "Patient not found")
+    })
+    public ResponseEntity<Patient> unassignDoctorFromPatient(@PathVariable Long patientId) {
+        var patient = patientQueryService.handle(new GetPatientByIdQuery(patientId));
+        if (patient.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Patient saved = patientCommandService.handleUnassignDoctor(patientId);
+        return ResponseEntity.ok(saved);
+    }
+
+    record UpdatePatientRequest(
+        String firstName,
+        String lastName,
+        String email,
+        String dni,
+        String birthDate,
+        String gender,
+        String phone,
+        String address,
+        String photoUrl,
+        Double weight,
+        Double height
+    ) {}
+
+    /**
      * Update patient by ID
      * @param id The patient ID
-     * @param command The {@link UpdatePatientCommand} containing updated patient data
+     * @param request The {@link UpdatePatientRequest} containing updated patient data
      * @return The updated patient, or a 404 response if not found
      */
     @PutMapping("/{id}")
@@ -114,10 +239,21 @@ public class PatientController {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "Patient not found")
     })
-    public ResponseEntity<Patient> updatePatient(@PathVariable Long id, @RequestBody UpdatePatientCommand command) {
-        if (!id.equals(command.patientId())) {
-            return ResponseEntity.badRequest().build();
-        }
+    public ResponseEntity<Patient> updatePatient(@PathVariable Long id, @RequestBody UpdatePatientRequest request) {
+        UpdatePatientCommand command = new UpdatePatientCommand(
+            id,
+            request.firstName(),
+            request.lastName(),
+            request.email(),
+            new com.chronicare.platform.patients.domain.valueobjects.Dni(request.dni()),
+            request.birthDate(),
+            request.gender(),
+            request.phone(),
+            request.address(),
+            request.photoUrl(),
+            request.weight(),
+            request.height()
+        );
         try {
             Patient updated = patientCommandService.handle(command);
             return ResponseEntity.ok(updated);

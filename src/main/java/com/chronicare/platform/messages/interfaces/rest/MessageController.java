@@ -1,89 +1,112 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.chronicare.platform.messages.interfaces.rest;
 
-import com.chronicare.platform.messages.application.services.MessageService;
-import com.chronicare.platform.messages.domain.model.Message;
+import com.chronicare.platform.messages.domain.model.commands.DeleteMessageCommand;
+import com.chronicare.platform.messages.domain.model.commands.MarkMessageAsReadCommand;
+import com.chronicare.platform.messages.domain.model.queries.*;
+import com.chronicare.platform.messages.domain.services.MessageCommandService;
+import com.chronicare.platform.messages.domain.services.MessageQueryService;
+import com.chronicare.platform.messages.interfaces.rest.resources.CreateMessageResource;
+import com.chronicare.platform.messages.interfaces.rest.resources.MessageResource;
+import com.chronicare.platform.messages.interfaces.rest.resources.UpdateMessageResource;
+import com.chronicare.platform.messages.interfaces.rest.transform.CreateMessageCommandFromResourceAssembler;
+import com.chronicare.platform.messages.interfaces.rest.transform.MessageResourceFromEntityAssembler;
+import com.chronicare.platform.messages.interfaces.rest.transform.UpdateMessageCommandFromResourceAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
+/**
+ * REST Controller for Message management
+ */
 @RestController
-@RequestMapping("/api/v1/messages")
-@Tag(name = "Messages", description = "Message management API")
+@RequestMapping(value = "/api/v1/messages", produces = MediaType.APPLICATION_JSON_VALUE)
+@Tag(name = "Messages", description = "Message Management Endpoints")
 public class MessageController {
 
-    private final MessageService messageService;
+    private final MessageCommandService messageCommandService;
+    private final MessageQueryService messageQueryService;
 
-    public MessageController(MessageService messageService) {
-        this.messageService = messageService;
+    public MessageController(
+            MessageCommandService messageCommandService,
+            MessageQueryService messageQueryService) {
+        this.messageCommandService = messageCommandService;
+        this.messageQueryService = messageQueryService;
     }
 
     @GetMapping
-    @Operation(summary = "List all messages")
-    public ResponseEntity<List<Message>> getAllMessages() {
-        return ResponseEntity.ok(messageService.getAllMessages());
+    @Operation(summary = "Get all messages")
+    public ResponseEntity<List<MessageResource>> getAllMessages() {
+        var query = new GetAllMessagesQuery();
+        var messages = messageQueryService.handle(query);
+        var resources = messages.stream()
+                .map(MessageResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
+        return ResponseEntity.ok(resources);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get message by ID")
-    public ResponseEntity<Message> getMessageById(@PathVariable Long id) {
-        Optional<Message> oMessage = messageService.getMessageById(id);
-
-        if (oMessage.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(oMessage.get());
-
+    public ResponseEntity<MessageResource> getMessageById(@PathVariable Long id) {
+        var query = new GetMessageByIdQuery(id);
+        var message = messageQueryService.handle(query);
+        return message
+                .map(m -> ResponseEntity.ok(MessageResourceFromEntityAssembler.toResourceFromEntity(m)))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/thread/{threadId}")
     @Operation(summary = "Get messages by thread ID")
-    public ResponseEntity<List<Message>> getMessagesByThread(@PathVariable Long threadId) {
-        return ResponseEntity.ok(messageService.getMessagesByThread(threadId));
+    public ResponseEntity<List<MessageResource>> getMessagesByThread(@PathVariable Long threadId) {
+        var query = new GetMessagesByThreadIdQuery(threadId);
+        var messages = messageQueryService.handle(query);
+        var resources = messages.stream()
+                .map(MessageResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
+        return ResponseEntity.ok(resources);
     }
 
     @PostMapping
     @Operation(summary = "Create a new message")
-    public ResponseEntity<Message> createMessage(@RequestBody Message message) {
-        Message created = messageService.createMessage(message);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    public ResponseEntity<MessageResource> createMessage(@RequestBody CreateMessageResource resource) {
+        var command = CreateMessageCommandFromResourceAssembler.toCommandFromResource(resource);
+        var message = messageCommandService.handle(command);
+        return message
+                .map(m -> new ResponseEntity<>(MessageResourceFromEntityAssembler.toResourceFromEntity(m), HttpStatus.CREATED))
+                .orElse(ResponseEntity.badRequest().build());
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update a message")
+    public ResponseEntity<MessageResource> updateMessage(
+            @PathVariable Long id,
+            @RequestBody UpdateMessageResource resource) {
+        var command = UpdateMessageCommandFromResourceAssembler.toCommandFromResource(id, resource);
+        var message = messageCommandService.handle(command);
+        return message
+                .map(m -> ResponseEntity.ok(MessageResourceFromEntityAssembler.toResourceFromEntity(m)))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}/read")
     @Operation(summary = "Mark message as read")
-    public ResponseEntity<Message> markAsRead(@PathVariable Long id) {
-        return ResponseEntity.ok(messageService.markAsRead(id));
-    }
-
-    @PutMapping("/{id}")
-    @Operation(summary = "Update message by ID")
-    public ResponseEntity<Message> markAsRead(@PathVariable Long id, @RequestBody Message message) {
-        Optional<Message> oMessage = messageService.getMessageById(id);
-
-        if (oMessage.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(messageService.updateMessage(id, message));
+    public ResponseEntity<MessageResource> markAsRead(@PathVariable Long id) {
+        var command = new MarkMessageAsReadCommand(id);
+        var message = messageCommandService.handle(command);
+        return message
+                .map(m -> ResponseEntity.ok(MessageResourceFromEntityAssembler.toResourceFromEntity(m)))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete message by ID")
+    @Operation(summary = "Delete a message")
     public ResponseEntity<Void> deleteMessage(@PathVariable Long id) {
-        Optional<Message> oMessage = messageService.getMessageById(id);
-
-        if (oMessage.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        messageService.deleteMessage(id);
+        var command = new DeleteMessageCommand(id);
+        messageCommandService.handle(command);
         return ResponseEntity.noContent().build();
     }
 }

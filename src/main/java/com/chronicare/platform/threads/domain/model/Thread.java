@@ -4,7 +4,7 @@
  */
 package com.chronicare.platform.threads.domain.model;
 
-import com.chronicare.platform.messages.domain.model.Message;
+import com.chronicare.platform.messages.domain.model.aggregates.Message;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.List;

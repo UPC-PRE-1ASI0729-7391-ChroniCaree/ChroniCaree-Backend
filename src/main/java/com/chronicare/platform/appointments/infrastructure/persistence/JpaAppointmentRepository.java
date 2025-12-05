@@ -4,7 +4,7 @@
  */
 package com.chronicare.platform.appointments.infrastructure.persistence;
 
-import com.chronicare.platform.appointments.domain.model.Appointment;
+import com.chronicare.platform.appointments.domain.model.aggregates.Appointment;
 import com.chronicare.platform.appointments.domain.repository.AppointmentRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

@@ -24,40 +24,29 @@ public class JpaTenantRepositoryAdapter implements TenantRepository {
         this.springRepo = springRepo;
     }
 
-    private Tenant toAggregate(Tenant e) {
-        var name = e.getName();
-        var aggName = new com.chronicare.platform.tenants.domain.valueobjects.TenantName(name.value()); ;
-        var t = new Tenant(e.getId(), aggName);
-        return t;
-    }
-
-    private Tenant toEntity(Tenant t) {
-        return Tenant.builder()
-                .id(t.getId())
-                .name(t.getName().value())
-                .build();
-    }
-
     @Override
     public List<Tenant> findAll() {
-        return springRepo.findAll().stream().map(this::toAggregate).collect(Collectors.toList());
+        return springRepo.findAll();
     }
 
     @Override
     public Optional<Tenant> findById(Long id) {
-        return springRepo.findById(id).map(this::toAggregate);
+        return springRepo.findById(id);
     }
 
     @Override
     public Optional<Tenant> findByName(String name) {
-        return springRepo.findByName(name).map(this::toAggregate);
+        return springRepo.findByName(name);
+    }
+
+    @Override
+    public Optional<Tenant> findByAdminUserId(Long adminUserId) {
+        return springRepo.findByAdminUserId(adminUserId);
     }
 
     @Override
     public Tenant save(Tenant tenant) {
-        Tenant entity = toEntity(tenant);
-        Tenant saved = springRepo.save(entity);
-        return toAggregate(saved);
+        return springRepo.save(tenant);
     }
 
     @Override

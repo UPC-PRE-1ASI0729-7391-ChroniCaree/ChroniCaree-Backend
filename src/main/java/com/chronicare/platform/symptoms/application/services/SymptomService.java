@@ -6,11 +6,10 @@ package com.chronicare.platform.symptoms.application.services;
 
 import com.chronicare.platform.patients.domain.model.aggregates.Patient;
 import com.chronicare.platform.patients.domain.repository.PatientRepository;
-import com.chronicare.platform.symptoms.domain.aggregate.Symptom;
+import com.chronicare.platform.symptoms.domain.model.aggregates.Symptom;
 import com.chronicare.platform.symptoms.domain.commands.CreateSymptomCommand;
 import com.chronicare.platform.symptoms.domain.commands.UpdateSymptomCommand;
 import com.chronicare.platform.symptoms.infrastructure.persistence.JpaSymptomRepository;
-import com.chronicare.platform.symptoms.domain.valueobject.PatientId;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;

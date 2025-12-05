@@ -4,7 +4,7 @@
  */
 package com.chronicare.platform.appointments.application.services;
 
-import com.chronicare.platform.appointments.domain.model.Appointment;
+import com.chronicare.platform.appointments.domain.model.aggregates.Appointment;
 import com.chronicare.platform.appointments.domain.repository.AppointmentRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;

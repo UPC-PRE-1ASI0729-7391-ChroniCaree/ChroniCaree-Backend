@@ -1,78 +1,101 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.chronicare.platform.medication.interfaces.rest;
 
-import com.chronicare.platform.medication.application.services.MedicationService;
-import com.chronicare.platform.medication.domain.model.Medication;
+import com.chronicare.platform.medication.domain.model.commands.DeleteMedicationCommand;
+import com.chronicare.platform.medication.domain.model.queries.*;
+import com.chronicare.platform.medication.domain.services.MedicationCommandService;
+import com.chronicare.platform.medication.domain.services.MedicationQueryService;
+import com.chronicare.platform.medication.interfaces.rest.resources.CreateMedicationResource;
+import com.chronicare.platform.medication.interfaces.rest.resources.MedicationResource;
+import com.chronicare.platform.medication.interfaces.rest.resources.UpdateMedicationResource;
+import com.chronicare.platform.medication.interfaces.rest.transform.CreateMedicationCommandFromResourceAssembler;
+import com.chronicare.platform.medication.interfaces.rest.transform.MedicationResourceFromEntityAssembler;
+import com.chronicare.platform.medication.interfaces.rest.transform.UpdateMedicationCommandFromResourceAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
-import java.util.Optional;
 
+import java.util.List;
+
+/**
+ * REST Controller for Medication management
+ */
 @RestController
-@RequestMapping("/api/v1/medications")
-@Tag(name = "Medications", description = "Medication management API")
+@RequestMapping(value = "/api/v1/medications", produces = MediaType.APPLICATION_JSON_VALUE)
+@Tag(name = "Medications", description = "Medication Management Endpoints")
 public class MedicationController {
-    
-    private final MedicationService medicationService;
-    
-    public MedicationController(MedicationService medicationService) {
-        this.medicationService = medicationService;
+
+    private final MedicationCommandService medicationCommandService;
+    private final MedicationQueryService medicationQueryService;
+
+    public MedicationController(
+            MedicationCommandService medicationCommandService,
+            MedicationQueryService medicationQueryService) {
+        this.medicationCommandService = medicationCommandService;
+        this.medicationQueryService = medicationQueryService;
     }
-    
+
     @GetMapping
-    @Operation(summary = "List all medications")
-    public ResponseEntity<List<Medication>> getAllMedications() {
-        return ResponseEntity.ok(medicationService.getAllMedications());
+    @Operation(summary = "Get all medications")
+    public ResponseEntity<List<MedicationResource>> getAllMedications() {
+        var query = new GetAllMedicationsQuery();
+        var medications = medicationQueryService.handle(query);
+        var resources = medications.stream()
+                .map(MedicationResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
+        return ResponseEntity.ok(resources);
     }
-    
+
     @GetMapping("/{id}")
     @Operation(summary = "Get medication by ID")
-    public ResponseEntity<Medication> getMedicationById(@PathVariable Long id) {
-        Optional<Medication> oMedication = medicationService.getMedicationById(id);
-        if (oMedication.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        
-        return ResponseEntity.ok(oMedication.get());
+    public ResponseEntity<MedicationResource> getMedicationById(@PathVariable Long id) {
+        var query = new GetMedicationByIdQuery(id);
+        var medication = medicationQueryService.handle(query);
+        return medication
+                .map(m -> ResponseEntity.ok(MedicationResourceFromEntityAssembler.toResourceFromEntity(m)))
+                .orElse(ResponseEntity.notFound().build());
     }
-    
+
     @GetMapping("/patient/{patientId}")
     @Operation(summary = "Get medications by patient ID")
-    public ResponseEntity<List<Medication>> getMedicationsByPatient(@PathVariable String patientId) {
-        return ResponseEntity.ok(medicationService.getMedicationsByPatient(patientId));
+    public ResponseEntity<List<MedicationResource>> getMedicationsByPatient(@PathVariable String patientId) {
+        var query = new GetMedicationsByPatientIdQuery(patientId);
+        var medications = medicationQueryService.handle(query);
+        var resources = medications.stream()
+                .map(MedicationResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
+        return ResponseEntity.ok(resources);
     }
-    
+
     @PostMapping
     @Operation(summary = "Create a new medication")
-    public ResponseEntity<Medication> createMedication(@RequestBody Medication medication) {
-        Medication created = medicationService.createMedication(medication);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    public ResponseEntity<MedicationResource> createMedication(@RequestBody CreateMedicationResource resource) {
+        var command = CreateMedicationCommandFromResourceAssembler.toCommandFromResource(resource);
+        var medication = medicationCommandService.handle(command);
+        return medication
+                .map(m -> new ResponseEntity<>(MedicationResourceFromEntityAssembler.toResourceFromEntity(m), HttpStatus.CREATED))
+                .orElse(ResponseEntity.badRequest().build());
     }
-    
+
     @PutMapping("/{id}")
-    @Operation(summary = "Update medication by ID")
-    public ResponseEntity<Medication> updateMedication(@PathVariable Long id, @RequestBody Medication medication) {
-        Optional<Medication> oMedication = medicationService.getMedicationById(id);
-        if (oMedication.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        
-        return ResponseEntity.ok(medicationService.updateMedication(id, medication));
+    @Operation(summary = "Update a medication")
+    public ResponseEntity<MedicationResource> updateMedication(
+            @PathVariable Long id,
+            @RequestBody UpdateMedicationResource resource) {
+        var command = UpdateMedicationCommandFromResourceAssembler.toCommandFromResource(id, resource);
+        var medication = medicationCommandService.handle(command);
+        return medication
+                .map(m -> ResponseEntity.ok(MedicationResourceFromEntityAssembler.toResourceFromEntity(m)))
+                .orElse(ResponseEntity.notFound().build());
     }
-    
+
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete medication by ID")
+    @Operation(summary = "Delete a medication")
     public ResponseEntity<Void> deleteMedication(@PathVariable Long id) {
-        Optional<Medication> oMedication = medicationService.getMedicationById(id);
-        if (oMedication.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        medicationService.deleteMedication(id);
+        var command = new DeleteMedicationCommand(id);
+        medicationCommandService.handle(command);
         return ResponseEntity.noContent().build();
     }
 }

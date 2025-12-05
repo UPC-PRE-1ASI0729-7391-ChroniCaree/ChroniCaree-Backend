@@ -1,86 +1,124 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.chronicare.platform.diagnosis.interfaces.rest;
 
-import com.chronicare.platform.diagnosis.application.services.DiagnosisService;
-import com.chronicare.platform.diagnosis.domain.model.Diagnosis;
+import com.chronicare.platform.diagnosis.domain.model.commands.DeleteDiagnosisCommand;
+import com.chronicare.platform.diagnosis.domain.model.queries.*;
+import com.chronicare.platform.diagnosis.domain.model.valueobjects.DiagnosisStatus;
+import com.chronicare.platform.diagnosis.domain.services.DiagnosisCommandService;
+import com.chronicare.platform.diagnosis.domain.services.DiagnosisQueryService;
+import com.chronicare.platform.diagnosis.interfaces.rest.resources.CreateDiagnosisResource;
+import com.chronicare.platform.diagnosis.interfaces.rest.resources.DiagnosisResource;
+import com.chronicare.platform.diagnosis.interfaces.rest.resources.UpdateDiagnosisResource;
+import com.chronicare.platform.diagnosis.interfaces.rest.transform.CreateDiagnosisCommandFromResourceAssembler;
+import com.chronicare.platform.diagnosis.interfaces.rest.transform.DiagnosisResourceFromEntityAssembler;
+import com.chronicare.platform.diagnosis.interfaces.rest.transform.UpdateDiagnosisCommandFromResourceAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
-import java.util.Optional;
 
+import java.util.List;
+
+/**
+ * REST Controller for Diagnosis management
+ */
 @RestController
-@RequestMapping("/api/v1/diagnoses")
-@Tag(name = "Diagnoses", description = "Diagnosis management API")
+@RequestMapping(value = "/api/v1/diagnoses", produces = MediaType.APPLICATION_JSON_VALUE)
+@Tag(name = "Diagnoses", description = "Diagnosis Management Endpoints")
 public class DiagnosisController {
 
-    private final DiagnosisService diagnosisService;
+    private final DiagnosisCommandService diagnosisCommandService;
+    private final DiagnosisQueryService diagnosisQueryService;
 
-    public DiagnosisController(DiagnosisService diagnosisService) {
-        this.diagnosisService = diagnosisService;
+    public DiagnosisController(
+            DiagnosisCommandService diagnosisCommandService,
+            DiagnosisQueryService diagnosisQueryService) {
+        this.diagnosisCommandService = diagnosisCommandService;
+        this.diagnosisQueryService = diagnosisQueryService;
     }
 
     @GetMapping
-    @Operation(summary = "List all diagnoses")
-    public ResponseEntity<List<Diagnosis>> getAllDiagnoses() {
-        return ResponseEntity.ok(diagnosisService.getAllDiagnoses());
+    @Operation(summary = "Get all diagnoses")
+    public ResponseEntity<List<DiagnosisResource>> getAllDiagnoses() {
+        var query = new GetAllDiagnosesQuery();
+        var diagnoses = diagnosisQueryService.handle(query);
+        var resources = diagnoses.stream()
+                .map(DiagnosisResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
+        return ResponseEntity.ok(resources);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get diagnosis by ID")
-    public ResponseEntity<Diagnosis> getDiagnosisById(@PathVariable Long id) {
-        Optional<Diagnosis> oDiagnosis = diagnosisService.getDiagnosisById(id);
-
-        if (oDiagnosis.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(oDiagnosis.get());
+    public ResponseEntity<DiagnosisResource> getDiagnosisById(@PathVariable Long id) {
+        var query = new GetDiagnosisByIdQuery(id);
+        var diagnosis = diagnosisQueryService.handle(query);
+        return diagnosis
+                .map(d -> ResponseEntity.ok(DiagnosisResourceFromEntityAssembler.toResourceFromEntity(d)))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/patient/{patientId}")
     @Operation(summary = "Get diagnoses by patient ID")
-    public ResponseEntity<List<Diagnosis>> getByPatient(@PathVariable Long patientId) {
-        return ResponseEntity.ok(diagnosisService.getDiagnosesByPatient(patientId));
+    public ResponseEntity<List<DiagnosisResource>> getDiagnosesByPatient(@PathVariable Long patientId) {
+        var query = new GetDiagnosesByPatientIdQuery(patientId);
+        var diagnoses = diagnosisQueryService.handle(query);
+        var resources = diagnoses.stream()
+                .map(DiagnosisResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
+        return ResponseEntity.ok(resources);
     }
 
     @GetMapping("/doctor/{doctorId}")
     @Operation(summary = "Get diagnoses by doctor ID")
-    public ResponseEntity<List<Diagnosis>> getByDoctor(@PathVariable Long doctorId) {
-        return ResponseEntity.ok(diagnosisService.getDiagnosesByDoctor(doctorId));
+    public ResponseEntity<List<DiagnosisResource>> getDiagnosesByDoctor(@PathVariable Long doctorId) {
+        var query = new GetDiagnosesByDoctorIdQuery(doctorId);
+        var diagnoses = diagnosisQueryService.handle(query);
+        var resources = diagnoses.stream()
+                .map(DiagnosisResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
+        return ResponseEntity.ok(resources);
+    }
+
+    @GetMapping("/status/{status}")
+    @Operation(summary = "Get diagnoses by status")
+    public ResponseEntity<List<DiagnosisResource>> getDiagnosesByStatus(@PathVariable DiagnosisStatus status) {
+        var query = new GetDiagnosesByStatusQuery(status);
+        var diagnoses = diagnosisQueryService.handle(query);
+        var resources = diagnoses.stream()
+                .map(DiagnosisResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
+        return ResponseEntity.ok(resources);
     }
 
     @PostMapping
-    @Operation(summary = "Create new diagnosis")
-    public ResponseEntity<Diagnosis> createDiagnosis(@RequestBody Diagnosis diagnosis) {
-        Diagnosis created = diagnosisService.createDiagnosis(diagnosis);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    @Operation(summary = "Create a new diagnosis")
+    public ResponseEntity<DiagnosisResource> createDiagnosis(@RequestBody CreateDiagnosisResource resource) {
+        var command = CreateDiagnosisCommandFromResourceAssembler.toCommandFromResource(resource);
+        var diagnosis = diagnosisCommandService.handle(command);
+        return diagnosis
+                .map(d -> new ResponseEntity<>(DiagnosisResourceFromEntityAssembler.toResourceFromEntity(d), HttpStatus.CREATED))
+                .orElse(ResponseEntity.badRequest().build());
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update diagnosis by ID")
-    public ResponseEntity<Diagnosis> updateDiagnosis(@PathVariable Long id, @RequestBody Diagnosis diagnosis) {
-        Optional<Diagnosis> oDiagnosis = diagnosisService.getDiagnosisById(id);
-
-        if (oDiagnosis.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(diagnosisService.updateDiagnosis(id, diagnosis));
+    @Operation(summary = "Update a diagnosis")
+    public ResponseEntity<DiagnosisResource> updateDiagnosis(
+            @PathVariable Long id,
+            @RequestBody UpdateDiagnosisResource resource) {
+        var command = UpdateDiagnosisCommandFromResourceAssembler.toCommandFromResource(id, resource);
+        var diagnosis = diagnosisCommandService.handle(command);
+        return diagnosis
+                .map(d -> ResponseEntity.ok(DiagnosisResourceFromEntityAssembler.toResourceFromEntity(d)))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete diagnosis by ID")
-    public ResponseEntity<?> deleteDiagnosis(@PathVariable Long id) {
-        Optional<Diagnosis> oDiagnosis = diagnosisService.getDiagnosisById(id);
-
-        if (oDiagnosis.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        diagnosisService.deleteDiagnosis(id);
+    @Operation(summary = "Delete a diagnosis")
+    public ResponseEntity<Void> deleteDiagnosis(@PathVariable Long id) {
+        var command = new DeleteDiagnosisCommand(id);
+        diagnosisCommandService.handle(command);
         return ResponseEntity.noContent().build();
     }
 }

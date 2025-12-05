@@ -6,8 +6,7 @@ import com.chronicare.platform.medicalRecords.domain.model.valueobjects.RecordTy
 import com.chronicare.platform.medicalRecords.domain.model.valueobjects.ReviewStatus;
 import com.chronicare.platform.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 /**
  * Medical Record Aggregate Root
@@ -15,8 +14,11 @@ import lombok.Setter;
  */
 @Entity
 @Table(name = "medical_records")
-@Getter
-@Setter
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@EqualsAndHashCode(callSuper = false)
 public class MedicalRecord extends AuditableAbstractAggregateRoot<MedicalRecord> {
 
     @Column(nullable = false)
@@ -52,10 +54,6 @@ public class MedicalRecord extends AuditableAbstractAggregateRoot<MedicalRecord>
 
     private String reviewedAt;
     private Long reviewedBy;
-
-    protected MedicalRecord() {
-        // Required by JPA
-    }
 
     public MedicalRecord(CreateMedicalRecordCommand command) {
         this.patientId = command.patientId();
@@ -137,4 +135,3 @@ public class MedicalRecord extends AuditableAbstractAggregateRoot<MedicalRecord>
         }
     }
 }
-

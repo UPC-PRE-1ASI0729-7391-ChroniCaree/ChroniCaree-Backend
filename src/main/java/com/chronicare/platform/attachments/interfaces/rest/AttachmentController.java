@@ -1,78 +1,91 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.chronicare.platform.attachments.interfaces.rest;
 
-import com.chronicare.platform.attachments.application.services.AttachmentService;
-import com.chronicare.platform.attachments.domain.model.Attachment;
+import com.chronicare.platform.attachments.domain.model.commands.DeleteAttachmentCommand;
+import com.chronicare.platform.attachments.domain.model.queries.GetAllAttachmentsQuery;
+import com.chronicare.platform.attachments.domain.model.queries.GetAttachmentByIdQuery;
+import com.chronicare.platform.attachments.domain.services.AttachmentCommandService;
+import com.chronicare.platform.attachments.domain.services.AttachmentQueryService;
+import com.chronicare.platform.attachments.interfaces.rest.resources.AttachmentResource;
+import com.chronicare.platform.attachments.interfaces.rest.resources.CreateAttachmentResource;
+import com.chronicare.platform.attachments.interfaces.rest.resources.UpdateAttachmentResource;
+import com.chronicare.platform.attachments.interfaces.rest.transform.AttachmentResourceFromEntityAssembler;
+import com.chronicare.platform.attachments.interfaces.rest.transform.CreateAttachmentCommandFromResourceAssembler;
+import com.chronicare.platform.attachments.interfaces.rest.transform.UpdateAttachmentCommandFromResourceAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
+/**
+ * REST Controller for Attachment management
+ */
 @RestController
-@RequestMapping("/api/v1/attachments")
-@Tag(name = "Attachments", description = "Attachment management API")
+@RequestMapping(value = "/api/v1/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
+@Tag(name = "Attachments", description = "Attachment Management Endpoints")
 public class AttachmentController {
 
-    private final AttachmentService attachmentService;
+    private final AttachmentCommandService attachmentCommandService;
+    private final AttachmentQueryService attachmentQueryService;
 
-    public AttachmentController(AttachmentService attachmentService) {
-        this.attachmentService = attachmentService;
+    public AttachmentController(
+            AttachmentCommandService attachmentCommandService,
+            AttachmentQueryService attachmentQueryService) {
+        this.attachmentCommandService = attachmentCommandService;
+        this.attachmentQueryService = attachmentQueryService;
     }
 
     @GetMapping
-    @Operation(summary = "List all attachments")
-    public ResponseEntity<List<Attachment>> getAllAttachments() {
-        return ResponseEntity.ok(attachmentService.getAllAttachments());
+    @Operation(summary = "Get all attachments")
+    public ResponseEntity<List<AttachmentResource>> getAllAttachments() {
+        var query = new GetAllAttachmentsQuery();
+        var attachments = attachmentQueryService.handle(query);
+        var resources = attachments.stream()
+                .map(AttachmentResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
+        return ResponseEntity.ok(resources);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get attachment by ID")
-    public ResponseEntity<Attachment> getAttachmentById(@PathVariable Long id) {
-        Optional<Attachment> oAttachment = attachmentService.getAttachmentById(id);
-
-        if (oAttachment.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(oAttachment.get());
+    public ResponseEntity<AttachmentResource> getAttachmentById(@PathVariable Long id) {
+        var query = new GetAttachmentByIdQuery(id);
+        var attachment = attachmentQueryService.handle(query);
+        return attachment
+                .map(a -> ResponseEntity.ok(AttachmentResourceFromEntityAssembler.toResourceFromEntity(a)))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    @Operation(summary = "Create new attachment")
-    public ResponseEntity<Attachment> createAttachment(@RequestBody Attachment attachment) {
-        Attachment created = attachmentService.createAttachment(attachment);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    @Operation(summary = "Create a new attachment")
+    public ResponseEntity<AttachmentResource> createAttachment(@RequestBody CreateAttachmentResource resource) {
+        var command = CreateAttachmentCommandFromResourceAssembler.toCommandFromResource(resource);
+        var attachment = attachmentCommandService.handle(command);
+        return attachment
+                .map(a -> new ResponseEntity<>(AttachmentResourceFromEntityAssembler.toResourceFromEntity(a), HttpStatus.CREATED))
+                .orElse(ResponseEntity.badRequest().build());
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update attachment by ID")
-    public ResponseEntity<Attachment> updateAttachment(@PathVariable Long id, @RequestBody Attachment attachment) {
-        Optional<Attachment> oAttachment = attachmentService.getAttachmentById(id);
-
-        if (oAttachment.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(attachmentService.updateAttachment(id, attachment));
+    @Operation(summary = "Update an attachment")
+    public ResponseEntity<AttachmentResource> updateAttachment(
+            @PathVariable Long id,
+            @RequestBody UpdateAttachmentResource resource) {
+        var command = UpdateAttachmentCommandFromResourceAssembler.toCommandFromResource(id, resource);
+        var attachment = attachmentCommandService.handle(command);
+        return attachment
+                .map(a -> ResponseEntity.ok(AttachmentResourceFromEntityAssembler.toResourceFromEntity(a)))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete attachment by ID")
+    @Operation(summary = "Delete an attachment")
     public ResponseEntity<Void> deleteAttachment(@PathVariable Long id) {
-        Optional<Attachment> oAttachment = attachmentService.getAttachmentById(id);
-
-        if (oAttachment.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        attachmentService.deleteAttachment(id);
+        var command = new DeleteAttachmentCommand(id);
+        attachmentCommandService.handle(command);
         return ResponseEntity.noContent().build();
     }
 }
