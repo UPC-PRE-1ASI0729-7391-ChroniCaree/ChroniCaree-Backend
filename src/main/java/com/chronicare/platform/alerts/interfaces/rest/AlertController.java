@@ -58,11 +58,34 @@ public class AlertController {
     // ==================== READ ====================
     
     @GetMapping
-    @Operation(summary = "Get all alerts")
-    public ResponseEntity<List<AlertResource>> getAllAlerts() {
+    @Operation(summary = "Get all alerts with optional filters")
+    public ResponseEntity<List<AlertResource>> getAllAlerts(
+            @RequestParam(required = false) Long patientId,
+            @RequestParam(required = false) Long doctorId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String severity) {
         try {
-            logger.info("Fetching all alerts");
-            List<Alert> alerts = alertQueryService.getAllAlerts();
+            logger.info("Fetching alerts with filters - patientId: {}, doctorId: {}, status: {}, severity: {}", 
+                patientId, doctorId, status, severity);
+            
+            List<Alert> alerts;
+            
+            // Filter by patientId if provided
+            if (patientId != null) {
+                var query = new GetAlertsByPatientIdQuery(patientId, status, severity, null, 0, 1000);
+                alerts = alertQueryService.handle(query);
+            }
+            // Filter by doctorId if provided
+            else if (doctorId != null) {
+                var query = new GetAlertsByDoctorIdQuery(doctorId, status, severity, null, null, 0, 1000, "createdAt DESC");
+                var page = alertQueryService.handle(query);
+                alerts = page.getContent(); // Extract list from Page
+            }
+            // No filters - get all alerts
+            else {
+                alerts = alertQueryService.getAllAlerts();
+            }
+            
             logger.info("Found {} alerts", alerts.size());
             
             List<AlertResource> resources = alerts.stream()
@@ -70,8 +93,8 @@ public class AlertController {
                 .toList();
             
             return ResponseEntity.ok(resources);
-        } catch (Exception e) {
-            logger.error("Error fetching all alerts", e);
+        } catch (Exception ex) {
+            logger.error("Error fetching alerts", ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
         }
     }
@@ -231,7 +254,6 @@ public class AlertController {
         long criticalCount = alertQueryService.countCriticalAlertsByTenantId(tenantId);
         
         // Get detailed counts
-        var activeQuery = new GetAlertsByTenantIdQuery(tenantId, "ACTIVE", null, null, 0, 1000);
         var acknowledgedQuery = new GetAlertsByTenantIdQuery(tenantId, "ACKNOWLEDGED", null, null, 0, 1000);
         var resolvedQuery = new GetAlertsByTenantIdQuery(tenantId, "RESOLVED", null, null, 0, 1000);
         var escalatedQuery = new GetAlertsByTenantIdQuery(tenantId, "ESCALATED", null, null, 0, 1000);

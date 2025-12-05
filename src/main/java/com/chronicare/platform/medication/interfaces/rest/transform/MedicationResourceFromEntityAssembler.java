@@ -13,6 +13,10 @@ import java.util.List;
  * Creates nested schedule object matching frontend expectations
  */
 public class MedicationResourceFromEntityAssembler {
+    
+    private MedicationResourceFromEntityAssembler() {
+        // Private constructor to prevent instantiation
+    }
 
     public static MedicationResource toResourceFromEntity(Medication entity) {
         // Null check para evitar NullPointerException
@@ -36,7 +40,7 @@ public class MedicationResourceFromEntityAssembler {
         Long patientId;
         try {
             patientId = Long.parseLong(entity.getPatientId());
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException _) {
             throw new IllegalStateException("Invalid patientId format for medication ID: " + entity.getId());
         }
         
