@@ -17,7 +17,7 @@ RUN ./mvnw dependency:go-offline -B
 COPY src ./src
 
 # Build
-RUN ./mvnw clean package -DskipTests -Dmaven.compiler.release=21
+RUN ./mvnw clean package -DskipTests
 
 # Run stage
 FROM eclipse-temurin:21-jre
