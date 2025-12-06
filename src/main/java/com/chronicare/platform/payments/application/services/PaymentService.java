@@ -13,6 +13,28 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Service layer for managing payment operations.
+ *
+ * @summary
+ * Provides application-level operations for creating, retrieving, and updating
+ * payments, ensuring proper transaction boundaries and persistence consistency.
+ *
+ * Responsibilities:
+ * - Create new payment records and persist them to the repository.
+ * - Retrieve payments by ID, subscription, payer, payer type, and pagination filters.
+ * - Update payment status and Stripe PaymentIntent linkage safely.
+ *
+ * Features:
+ * - Read-only transactions for query operations to improve performance.
+ * - Paginated endpoints for large datasets (ordered by most recent first).
+ * - Strong separation between domain model and persistence access.
+ *
+ * Notes:
+ * - The payment status update operation validates existence before applying changes.
+ * - Optional Stripe PaymentIntent IDs are stored only when provided.
+ */
+
 @Service
 public class PaymentService {
 

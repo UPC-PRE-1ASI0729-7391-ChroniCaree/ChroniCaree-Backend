@@ -13,9 +13,18 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 /**
- * Implementation of MessageCommandService
- * Handles command operations for messages
+ * MessageCommandService Implementation
+ *
+ * @summary
+ * Handles Message command operations and enforces domain-level behaviors.
+ * Business rules enforced:
+ * - Message creation delegates validation to the Message aggregate.
+ * - Updates are only performed on existing messages.
+ * - Messages can be marked as read following domain state rules.
+ * - Deletion assumes existence checks are handled externally.
+ *
  */
+
 @Service
 @Transactional
 public class MessageCommandServiceImpl implements MessageCommandService {
