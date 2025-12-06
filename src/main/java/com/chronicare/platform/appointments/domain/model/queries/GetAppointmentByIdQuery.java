@@ -1,7 +1,7 @@
 package com.chronicare.platform.appointments.domain.model.queries;
 
 /**
- * Query to get appointment by ID
+ * Summary: Query to get appointment by ID
  */
 public record GetAppointmentByIdQuery(Long appointmentId) {
     public GetAppointmentByIdQuery {

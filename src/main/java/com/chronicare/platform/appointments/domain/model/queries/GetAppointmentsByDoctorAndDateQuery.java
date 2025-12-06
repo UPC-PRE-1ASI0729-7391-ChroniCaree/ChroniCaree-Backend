@@ -3,7 +3,7 @@ package com.chronicare.platform.appointments.domain.model.queries;
 import java.time.LocalDate;
 
 /**
- * Query to get appointments by doctor and date
+ * Summary: Query to get appointments by doctor and date
  */
 public record GetAppointmentsByDoctorAndDateQuery(
     Long doctorId,

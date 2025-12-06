@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Appointment Command Service Implementation
+ * Summary: Appointment Command Service Implementation
  */
 @Service
 public class AppointmentCommandServiceImpl implements AppointmentCommandService {

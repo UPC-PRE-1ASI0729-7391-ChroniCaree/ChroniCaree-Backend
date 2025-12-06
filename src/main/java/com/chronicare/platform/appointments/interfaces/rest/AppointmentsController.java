@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Appointments Controller
+ * Summary: Appointments Controller
  * Exposes endpoints for appointment management
  */
 @RestController

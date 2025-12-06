@@ -1,7 +1,7 @@
 package com.chronicare.platform.appointments.domain.model.queries;
 
 /**
- * Query to get appointments by patient
+ * Summary: Query to get appointments by patient
  */
 public record GetAppointmentsByPatientQuery(Long patientId) {
     public GetAppointmentsByPatientQuery {

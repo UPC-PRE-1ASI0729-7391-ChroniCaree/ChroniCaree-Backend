@@ -4,7 +4,7 @@ import com.chronicare.platform.appointments.domain.model.aggregates.Appointment;
 import com.chronicare.platform.appointments.interfaces.rest.resources.AppointmentResource;
 
 /**
- * Appointment Resource Assembler
+ * Summary: Appointment Resource Assembler
  * Transforms Appointment entity to AppointmentResource
  */
 public class AppointmentResourceFromEntityAssembler {
