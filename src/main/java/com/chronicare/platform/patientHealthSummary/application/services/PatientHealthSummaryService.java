@@ -13,6 +13,22 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * PatientHealthSummaryService
+ *
+ * @summary
+ * Application service responsible for orchestrating PatientHealthSummary operations.
+ *
+ * @description
+ * - Provides a transactional boundary for CRUD operations.
+ * - Delegates persistence to the domain-driven PatientHealthSummaryRepository.
+ * - Supports queries by summary ID, user ID, and assigned doctor ID.
+ * - Ensures correct update behavior by enforcing ID assignment on modifications.
+ * This service acts as an application-level façade, encapsulating domain interactions
+ * and exposing a clean API for controllers or command handlers.
+ */
+
+
 @Service
 @Transactional
 public class PatientHealthSummaryService {
