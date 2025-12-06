@@ -8,6 +8,17 @@ import com.chronicare.platform.medicalRecords.domain.repository.MedicalRecordRep
 import com.chronicare.platform.medicalRecords.domain.services.MedicalRecordCommandService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+/**
+ * MedicalRecordCommandService Implementation
+ *
+ * @summary
+ * Handles Medical Record commands and applies domain business rules.
+ * Business rules enforced:
+ * - Creation of medical records delegates validation to the MedicalRecord aggregate.
+ * - Updates are only applied to existing medical records.
+ * - Deletion is restricted to records that exist in the system.
+ *
+ */
 
 @Service
 public class MedicalRecordCommandServiceImpl implements MedicalRecordCommandService {
