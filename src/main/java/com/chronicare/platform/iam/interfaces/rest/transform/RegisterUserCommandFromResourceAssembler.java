@@ -10,7 +10,11 @@ import com.chronicare.platform.iam.interfaces.rest.resources.CreateUserResource;
 public class RegisterUserCommandFromResourceAssembler {
     
     public static RegisterUserCommand toCommandFromResource(CreateUserResource resource) {
-        var role = Roles.fromName(resource.role());
+        // Default to PATIENT role if not provided
+        String roleName = resource.role() != null && !resource.role().isBlank() 
+            ? resource.role() 
+            : "PATIENT";
+        var role = Roles.fromName(roleName);
         // Use getFullName() to support both name and firstName/lastName formats
         String fullName = resource.getFullName();
         return new RegisterUserCommand(

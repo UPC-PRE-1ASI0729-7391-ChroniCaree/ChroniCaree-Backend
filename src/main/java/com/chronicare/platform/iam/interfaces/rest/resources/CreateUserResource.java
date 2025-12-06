@@ -2,7 +2,6 @@ package com.chronicare.platform.iam.interfaces.rest.resources;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 /**
  * Create User Resource
@@ -24,7 +23,7 @@ public record CreateUserResource(
     String firstName,
     String lastName,
     
-    @NotNull(message = "Role is required")
+    // Role is optional - defaults to PATIENT if not provided
     String role,
     
     Long tenantId
