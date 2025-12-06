@@ -16,7 +16,6 @@ import java.util.Optional;
  *
  * @summary
  * Handles Medication command operations and enforces domain business rules.
- *
  * Business rules enforced:
  * - Creation of medications delegates validation to the Medication aggregate.
  * - Updates are only applied to existing medications.
