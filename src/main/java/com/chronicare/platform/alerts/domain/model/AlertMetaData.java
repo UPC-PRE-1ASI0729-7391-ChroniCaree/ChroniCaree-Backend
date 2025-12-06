@@ -7,6 +7,10 @@ package com.chronicare.platform.alerts.domain.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * Summary: Alert Metadata Domain Entity
+ */
+
 @Entity
 @Table(name = "alert_metadata")
 @Data
