@@ -1,7 +1,7 @@
 package com.chronicare.platform.alerts.domain.model.valueobjects;
 
 /**
- * Alert Status Value Object
+ * Summary: Alert Status Value Object
  * Defines the possible states of an alert
  */
 public enum AlertStatus {
