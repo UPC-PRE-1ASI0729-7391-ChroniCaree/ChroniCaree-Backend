@@ -1,7 +1,7 @@
 package com.chronicare.platform.invitations.interfaces.rest.resources;
 
 /**
- * Resource for accepting an invitation
+ * Summary: Resource for accepting an invitation
  */
 public record AcceptInvitationResource(
     String token,

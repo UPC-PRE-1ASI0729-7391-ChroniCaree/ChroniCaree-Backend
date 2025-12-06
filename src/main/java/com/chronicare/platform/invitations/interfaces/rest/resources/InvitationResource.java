@@ -3,7 +3,7 @@ package com.chronicare.platform.invitations.interfaces.rest.resources;
 import java.time.LocalDateTime;
 
 /**
- * Resource for Invitation responses
+ * Summary: Resource for Invitation responses
  */
 public record InvitationResource(
     Long id,

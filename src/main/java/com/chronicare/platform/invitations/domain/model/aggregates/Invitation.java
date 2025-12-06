@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * Invitation Aggregate Root
+ * Summary: Invitation Aggregate Root
  * Represents an invitation for a doctor to join a hospital/tenant
  */
 @Entity

@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * REST Controller for Invitation management
+ * Summary: REST Controller for Invitation management
  * Handles doctor invitations to hospitals/tenants
  */
 @RestController

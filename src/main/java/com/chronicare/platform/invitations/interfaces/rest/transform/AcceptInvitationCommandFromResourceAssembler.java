@@ -4,7 +4,7 @@ import com.chronicare.platform.invitations.domain.model.commands.AcceptInvitatio
 import com.chronicare.platform.invitations.interfaces.rest.resources.AcceptInvitationResource;
 
 /**
- * Assembler to transform AcceptInvitationResource to AcceptInvitationCommand
+ * Summary: Assembler to transform AcceptInvitationResource to AcceptInvitationCommand
  */
 public class AcceptInvitationCommandFromResourceAssembler {
 

@@ -4,7 +4,7 @@ import com.chronicare.platform.invitations.domain.model.commands.CreateInvitatio
 import com.chronicare.platform.invitations.interfaces.rest.resources.CreateInvitationResource;
 
 /**
- * Assembler to transform CreateInvitationResource to CreateInvitationCommand
+ * Summary: Assembler to transform CreateInvitationResource to CreateInvitationCommand
  */
 public class CreateInvitationCommandFromResourceAssembler {
 

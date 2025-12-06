@@ -1,7 +1,7 @@
 package com.chronicare.platform.invitations.domain.model.commands;
 
 /**
- * Command to create a new invitation
+ * Summary: Command to create a new invitation
  */
 public record CreateInvitationCommand(
     Long tenantId,

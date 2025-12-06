@@ -1,7 +1,7 @@
 package com.chronicare.platform.invitations.interfaces.rest.resources;
 
 /**
- * Resource for creating a new invitation
+ * Summary: Resource for creating a new invitation
  */
 public record CreateInvitationResource(
     Long tenantId,

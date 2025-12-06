@@ -1,7 +1,7 @@
 package com.chronicare.platform.invitations.interfaces.rest.resources;
 
 /**
- * Response for accepting an invitation
+ * Summary: Response for accepting an invitation
  */
 public record AcceptInvitationResponse(
     boolean success,
