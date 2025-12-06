@@ -12,9 +12,18 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 /**
- * Implementation of MedicationCommandService
- * Handles command operations for medications
+ * MedicationCommandService Implementation
+ *
+ * @summary
+ * Handles Medication command operations and enforces domain business rules.
+ *
+ * Business rules enforced:
+ * - Creation of medications delegates validation to the Medication aggregate.
+ * - Updates are only applied to existing medications.
+ * - Deletion operates directly and assumes existence checks are handled externally.
+ *
  */
+
 @Service
 @Transactional
 public class MedicationCommandServiceImpl implements MedicationCommandService {
