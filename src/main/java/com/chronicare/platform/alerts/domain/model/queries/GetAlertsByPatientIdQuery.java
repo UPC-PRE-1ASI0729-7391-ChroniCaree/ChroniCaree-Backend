@@ -1,7 +1,7 @@
 package com.chronicare.platform.alerts.domain.model.queries;
 
 /**
- * Query to get alerts by patient ID with optional filters
+ * Summary: Query to get alerts by patient ID with optional filters
  */
 public record GetAlertsByPatientIdQuery(
     Long patientId,
