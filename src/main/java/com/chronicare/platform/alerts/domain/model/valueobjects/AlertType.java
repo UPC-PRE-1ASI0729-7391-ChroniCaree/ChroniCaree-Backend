@@ -1,7 +1,7 @@
 package com.chronicare.platform.alerts.domain.model.valueobjects;
 
 /**
- * Alert Type Value Object
+ * Summary: Alert Type Value Object
  * Defines all possible types of alerts in the system
  */
 public enum AlertType {
