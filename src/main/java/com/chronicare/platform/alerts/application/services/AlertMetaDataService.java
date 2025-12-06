@@ -11,6 +11,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Summary: Implementation of Alert Metadata Service
+ */
+
 @Service
 @Transactional
 public class AlertMetaDataService {
