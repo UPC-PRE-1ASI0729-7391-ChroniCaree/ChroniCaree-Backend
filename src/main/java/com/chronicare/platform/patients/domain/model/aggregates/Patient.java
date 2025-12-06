@@ -38,7 +38,8 @@ public class Patient extends AuditableAbstractAggregateRoot<Patient> {
 
     public Patient(CreatePatientCommand command) {
         this.userId = command.userId();
-        this.tenantId = command.tenantId(); // Assign to hospital/clinic
+        this.assignedDoctorId = command.assignedDoctorId(); // Assign doctor (optional)
+        this.tenantId = command.tenantId(); // Assign to hospital/clinic (optional)
         this.firstName = command.firstName();
         this.lastName = command.lastName();
         this.email = command.email();

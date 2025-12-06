@@ -55,25 +55,51 @@ public class PatientCommandServiceImpl implements PatientCommandService {
     @Override
     @Transactional
     public Patient handle(CreatePatientCommand command) {
-        // Validate DNI uniqueness
-        if (patientRepository.existsByDni(command.dni())) {
-            throw new IllegalArgumentException("Patient with DNI " + command.dni().value() + " already exists");
-        }
+        var logger = java.util.logging.Logger.getLogger(getClass().getName());
+        logger.info("========== Creating patient ==========");
+        logger.info("userId: " + command.userId());
+        logger.info("assignedDoctorId: " + command.assignedDoctorId());
+        logger.info("tenantId: " + command.tenantId());
+        logger.info("dni: " + command.dni().value());
+        logger.info("firstName: " + command.firstName());
+        logger.info("lastName: " + command.lastName());
+        
+        try {
+            // Validate DNI uniqueness
+            if (patientRepository.existsByDni(command.dni())) {
+                throw new IllegalArgumentException("Patient with DNI " + command.dni().value() + " already exists");
+            }
 
-        // Validate userId exists
-        if (command.userId() != null) {
-            userRepository.findById(command.userId())
-                    .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + command.userId()));
-        }
+            // Validate userId exists
+            if (command.userId() != null) {
+                userRepository.findById(command.userId())
+                        .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + command.userId()));
+            }
 
-        // Validate tenantId exists (if provided)
-        if (command.tenantId() != null) {
-            tenantRepository.findById(command.tenantId())
-                    .orElseThrow(() -> new IllegalArgumentException("Tenant not found with ID: " + command.tenantId()));
-        }
+            // Validate assignedDoctorId exists (if provided)
+            if (command.assignedDoctorId() != null) {
+                doctorRepository.findById(command.assignedDoctorId())
+                        .orElseThrow(() -> new IllegalArgumentException("Doctor not found with ID: " + command.assignedDoctorId()));
+            }
 
-        var patient = new Patient(command);
-        return patientRepository.save(patient);
+            // Validate tenantId exists (if provided)
+            if (command.tenantId() != null) {
+                tenantRepository.findById(command.tenantId())
+                        .orElseThrow(() -> new IllegalArgumentException("Tenant not found with ID: " + command.tenantId()));
+            }
+
+            var patient = new Patient(command);
+            return patientRepository.save(patient);
+        } catch (IllegalArgumentException e) {
+            // Re-throw validation errors as-is
+            throw e;
+        } catch (Exception e) {
+            // Log unexpected errors and provide clear message
+            java.util.logging.Logger.getLogger(getClass().getName())
+                    .severe("❌ Error creating patient: " + e.getMessage() + " | Command: userId=" + command.userId() 
+                            + ", dni=" + command.dni().value() + ", assignedDoctorId=" + command.assignedDoctorId());
+            throw new IllegalArgumentException("Failed to create patient: " + e.getMessage(), e);
+        }
     }
 
     @Override

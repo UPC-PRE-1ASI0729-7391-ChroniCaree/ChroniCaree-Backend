@@ -17,7 +17,8 @@ import  com.chronicare.platform.patients.domain.valueobjects.Dni;
 
 public record CreatePatientCommand(
         Long userId,
-        Long tenantId,         // Hospital/Clinic that manages this patient
+        Long assignedDoctorId, // Doctor assigned to patient (optional)
+        Long tenantId,         // Hospital/Clinic that manages this patient (optional)
         String firstName,
         String lastName,
         String email,

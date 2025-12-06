@@ -121,13 +121,18 @@ public class TenantService {
             throw new IllegalArgumentException("Tenant name already exists");
         }
 
+        String normalizedStatus = command.status() != null ? command.status().toLowerCase() : "pending_subscription";
+        if (!ALLOWED_STATUS.contains(normalizedStatus)) {
+            throw new IllegalArgumentException("Invalid status value. Allowed: " + ALLOWED_STATUS);
+        }
+        
         Tenant tenant = Tenant.builder()
                 .name(command.name().value())
                 .adminUserId(command.adminUserId())
                 .email(command.email())
                 .address(command.address())
                 .phone(command.phone())
-                .status(command.status() != null ? command.status() : "PENDING")
+                .status(normalizedStatus)
                 .subscriptionId(command.subscriptionId())
                 .registrationDate(command.registrationDate())
                 .allowIndependentDoctors(command.allowIndependentDoctors())
@@ -204,10 +209,11 @@ public class TenantService {
 
     private void updateStatus(Tenant existing, UpdateTenantCommand command) {
         if (command.status() != null) {
-            if (!ALLOWED_STATUS.contains(command.status())) {
-                throw new IllegalArgumentException("Invalid status value");
+            String normalizedStatus = command.status().toLowerCase();
+            if (!ALLOWED_STATUS.contains(normalizedStatus)) {
+                throw new IllegalArgumentException("Invalid status value. Allowed: " + ALLOWED_STATUS);
             }
-            existing.setStatus(command.status());
+            existing.setStatus(normalizedStatus);
         }
     }
 

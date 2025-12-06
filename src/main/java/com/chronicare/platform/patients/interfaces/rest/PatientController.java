@@ -162,7 +162,8 @@ public class PatientController {
 
     record CreatePatientRequest(
         Long userId,
-        Long tenantId,      // Hospital/Clinic that manages this patient
+        Long assignedDoctorId,  // Doctor assigned to patient (optional)
+        Long tenantId,          // Hospital/Clinic that manages this patient (optional)
         String firstName,
         String lastName,
         String email,
@@ -191,6 +192,7 @@ public class PatientController {
     public ResponseEntity<Patient> createPatient(@RequestBody CreatePatientRequest request) {
         CreatePatientCommand command = new CreatePatientCommand(
             request.userId(),
+            request.assignedDoctorId(),
             request.tenantId(),
             request.firstName(),
             request.lastName(),
