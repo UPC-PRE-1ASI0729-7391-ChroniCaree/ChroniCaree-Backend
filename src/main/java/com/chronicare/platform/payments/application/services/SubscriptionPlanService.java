@@ -9,6 +9,24 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * SubscriptionPlanService
+ *
+ * @summary
+ * Application service responsible for managing subscription plans.
+ * Main responsibilities:
+ * - Retrieve active plans and filter them by type.
+ * - Fetch plans by internal ID or external planId identifier.
+ * - Create new plans ensuring planId uniqueness.
+ * - Update existing plans with full field replacement.
+ * - Deactivate plans by toggling the active flag.
+ * - Save or update a plan depending on its existence (idempotent behavior).
+ * Business rules enforced:
+ * - A plan cannot be created if another plan with the same planId already exists.
+ * - Updates and deactivations can only be performed on existing plans.
+ */
+
+
 @Service
 public class SubscriptionPlanService {
 
