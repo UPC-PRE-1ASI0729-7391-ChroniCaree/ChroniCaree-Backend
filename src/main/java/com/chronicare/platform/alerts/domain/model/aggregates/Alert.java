@@ -12,7 +12,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 /**
- * Alert Aggregate Root
+ * Summary: Alert Aggregate Root
  * Represents an alert in the system following Learning Center pattern
  */
 @Entity
