@@ -24,8 +24,45 @@ public class SymptomController {
         this.service = service;
     }
 
-    @GetMapping
-    public ResponseEntity<List<Symptom>> getAllSymptoms() {
+        @GetMapping
+        @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'HOSPITAL_ADMIN', 'SYSTEM', 'PATIENT', 'TENANT_ADMIN')")
+        public ResponseEntity<List<Symptom>> getAllSymptoms(
+            @RequestParam(required = false) String patientId,
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "20") Integer limit) {
+        if (patientId != null && !patientId.isBlank()) {
+            if (!patientId.matches("\\d+")) {
+                return ResponseEntity.badRequest().build();
+            }
+            Long pid = Long.parseLong(patientId);
+            var symptoms = service.getSymptomsByPatientId(pid);
+            java.time.Instant f = null;
+            java.time.Instant t = null;
+            try {
+                if (from != null && !from.isBlank()) f = java.time.Instant.parse(from);
+                if (to != null && !to.isBlank()) t = java.time.Instant.parse(to);
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().build();
+            }
+            if (f != null || t != null) {
+                var finalF = f;
+                var finalT = t;
+                symptoms = symptoms.stream()
+                        .filter(s -> {
+                                    var ts = s.getTimestamp() != null ? s.getTimestamp().atZone(java.time.ZoneId.systemDefault()).toInstant() : null;
+                            if (ts == null) return false;
+                            if (finalF != null && ts.isBefore(finalF)) return false;
+                            if (finalT != null && ts.isAfter(finalT)) return false;
+                            return true;
+                        }).toList();
+            }
+            int fromIndex = Math.max(0, page * limit);
+            int toIndex = Math.min(symptoms.size(), fromIndex + limit);
+            var pageContent = symptoms.subList(fromIndex, toIndex);
+            return ResponseEntity.ok(pageContent);
+        }
         return ResponseEntity.ok(service.getAllSymptoms());
     }
 

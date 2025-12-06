@@ -41,15 +41,21 @@ public class PatientController {
 
     private final PatientCommandService patientCommandService;
     private final PatientQueryService patientQueryService;
+    private final com.chronicare.platform.patientHealthSummary.application.services.PatientHealthSummaryService patientHealthSummaryService;
 
     /**
      * Constructor
      * @param patientCommandService The {@link PatientCommandService} instance
      * @param patientQueryService The {@link PatientQueryService} instance
+     * @param patientHealthSummaryService The PatientHealthSummaryService instance
      */
-    public PatientController(PatientCommandService patientCommandService, PatientQueryService patientQueryService) {
+    public PatientController(
+            PatientCommandService patientCommandService, 
+            PatientQueryService patientQueryService,
+            com.chronicare.platform.patientHealthSummary.application.services.PatientHealthSummaryService patientHealthSummaryService) {
         this.patientCommandService = patientCommandService;
         this.patientQueryService = patientQueryService;
+        this.patientHealthSummaryService = patientHealthSummaryService;
     }
 
     /**
@@ -100,6 +106,37 @@ public class PatientController {
         return patientQueryService.handle(new GetPatientByUserIdQuery(userId))
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Get patient health summary
+     * @param id The patient ID
+     * @return The patient health summary if found, or a 404 response if not found
+     */
+    @GetMapping("/{id}/health-summary")
+    @Operation(summary = "Get patient health summary", description = "Retrieve health summary for a specific patient by patient ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Health summary found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "Patient or health summary not found")
+    })
+    public ResponseEntity<?> getPatientHealthSummary(@PathVariable Long id) {
+        // Get patient by ID to retrieve userId
+        var patientOpt = patientQueryService.handle(new GetPatientByIdQuery(id));
+        if (patientOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        // Get patient's userId
+        Long userId = patientOpt.get().getUserId();
+        
+        // Get health summary by userId
+        var summary = patientHealthSummaryService.getSummaryByUserId(userId);
+        if (summary == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        return ResponseEntity.ok(summary);
     }
 
     /**

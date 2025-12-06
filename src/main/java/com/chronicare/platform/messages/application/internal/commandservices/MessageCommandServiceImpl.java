@@ -37,9 +37,16 @@ public class MessageCommandServiceImpl implements MessageCommandService {
 
     @Override
     public Optional<Message> handle(CreateMessageCommand command) {
-        var message = new Message(command);
-        var savedMessage = messageRepository.save(message);
-        return Optional.of(savedMessage);
+        try {
+            if (command.senderId() == null || command.receiverId() == null || command.body() == null || command.body().isBlank()) {
+                return Optional.empty();
+            }
+            var message = new Message(command);
+            var savedMessage = messageRepository.save(message);
+            return Optional.of(savedMessage);
+        } catch (Exception _) {
+            return Optional.empty();
+        }
     }
 
     @Override

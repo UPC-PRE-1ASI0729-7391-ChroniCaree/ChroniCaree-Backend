@@ -8,13 +8,17 @@ import com.chronicare.platform.tenants.domain.commands.DeleteTenantCommand;
 import com.chronicare.platform.tenants.domain.commands.UpdateTenantCommand;
 import com.chronicare.platform.tenants.domain.events.TenantCreatedEvent;
 import com.chronicare.platform.tenants.domain.repository.TenantRepository;
+import com.chronicare.platform.payments.infrastructure.persistence.jpa.repositories.SubscriptionRepository;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.util.regex.Pattern;
 
 /**
  * TenantService
@@ -39,15 +43,20 @@ import java.util.logging.Logger;
 @Transactional
 public class TenantService {
     private static final Logger logger = Logger.getLogger(TenantService.class.getName());
+    private static final Set<String> ALLOWED_STATUS = Set.of("pending_subscription", "active", "suspended", "cancelled");
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^\\d{6,15}$");
 
     private final TenantRepository repository;
     private final UserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final SubscriptionRepository subscriptionRepository;
 
-    public TenantService(TenantRepository repository, UserRepository userRepository, ApplicationEventPublisher eventPublisher) {
+    public TenantService(TenantRepository repository, UserRepository userRepository, ApplicationEventPublisher eventPublisher, SubscriptionRepository subscriptionRepository) {
         this.repository = repository;
         this.userRepository = userRepository;
         this.eventPublisher = eventPublisher;
+        this.subscriptionRepository = subscriptionRepository;
     }
 
     public List<Tenant> getAllTenants() {
@@ -59,32 +68,38 @@ public class TenantService {
     }
 
     public Optional<Tenant> getTenantByAdminUserId(Long adminUserId) {
-        logger.info("========== TenantService: getTenantByAdminUserId ==========");
-        logger.info("  - Searching for tenant with adminUserId: " + adminUserId);
+        if (logger.isLoggable(Level.INFO)) {
+            logger.log(Level.INFO, "========== TenantService: getTenantByAdminUserId ==========");
+            logger.log(Level.INFO, "  - Searching for tenant with adminUserId: {0}", adminUserId);
+        }
         
         Optional<Tenant> result = repository.findByAdminUserId(adminUserId);
         
         if (result.isPresent()) {
-            logger.info("✓ Tenant FOUND:");
-            logger.info("  - Tenant ID: " + result.get().getId());
-            logger.info("  - Tenant Name: " + result.get().getName());
-            logger.info("  - Admin User ID: " + result.get().getAdminUserId());
-            logger.info("  - Status: " + result.get().getStatus());
+            if (logger.isLoggable(Level.INFO)) {
+                logger.log(Level.INFO, "✓ Tenant FOUND:");
+                logger.log(Level.INFO, "  - Tenant ID: {0}", result.get().getId());
+                logger.log(Level.INFO, "  - Tenant Name: {0}", result.get().getName());
+                logger.log(Level.INFO, "  - Admin User ID: {0}", result.get().getAdminUserId());
+                logger.log(Level.INFO, "  - Status: {0}", result.get().getStatus());
+            }
         } else {
-            logger.warning("❌ Tenant NOT FOUND for adminUserId: " + adminUserId);
+            logger.log(Level.WARNING, "❌ Tenant NOT FOUND for adminUserId: {0}", adminUserId);
             
             // Debug: List ALL tenants to see what exists
             List<Tenant> allTenants = repository.findAll();
-            logger.info("Total tenants in database: " + allTenants.size());
-            if (!allTenants.isEmpty()) {
-                logger.info("All tenants:");
-                for (Tenant t : allTenants) {
-                    logger.info("  - ID: " + t.getId() + ", Name: " + t.getName() + ", AdminUserId: " + t.getAdminUserId());
+            if (logger.isLoggable(Level.INFO)) {
+                logger.log(Level.INFO, "Total tenants in database: {0}", allTenants.size());
+                if (!allTenants.isEmpty()) {
+                    logger.log(Level.INFO, "All tenants:");
+                    for (Tenant t : allTenants) {
+                        logger.log(Level.INFO, "  - ID: {0}, Name: {1}, AdminUserId: {2}", new Object[]{t.getId(), t.getName(), t.getAdminUserId()});
+                    }
                 }
             }
         }
         
-        logger.info("============================================================");
+        logger.log(Level.INFO, "============================================================");
         return result;
     }
 
@@ -133,6 +148,27 @@ public class TenantService {
         Tenant existing = repository.findById(command.tenantId())
                 .orElseThrow(() -> new IllegalArgumentException("Tenant not found"));
 
+        updateAdminUser(existing, command);
+        updateName(existing, command);
+        updateEmail(existing, command);
+        updateAddress(existing, command);
+        updatePhone(existing, command);
+        updateStatus(existing, command);
+        updateSubscription(existing, command);
+        updateSettings(existing, command);
+
+        return repository.save(existing);
+    }
+
+    private void updateAdminUser(Tenant existing, UpdateTenantCommand command) {
+        if (command.adminUserId() != null) {
+            userRepository.findById(command.adminUserId())
+                    .orElseThrow(() -> new IllegalArgumentException("Admin user not found with ID: " + command.adminUserId()));
+            existing.setAdminUserId(command.adminUserId());
+        }
+    }
+
+    private void updateName(Tenant existing, UpdateTenantCommand command) {
         if (command.name() != null) {
             var maybeByName = repository.findByName(command.name().value());
             if (maybeByName.isPresent() && !maybeByName.get().getId().equals(existing.getId())) {
@@ -140,22 +176,50 @@ public class TenantService {
             }
             existing.updateName(command.name());
         }
+    }
 
+    private void updateEmail(Tenant existing, UpdateTenantCommand command) {
         if (command.email() != null) {
+            if (!EMAIL_PATTERN.matcher(command.email()).matches()) {
+                throw new IllegalArgumentException("Invalid email format");
+            }
             existing.setEmail(command.email());
         }
+    }
+
+    private void updateAddress(Tenant existing, UpdateTenantCommand command) {
         if (command.address() != null) {
             existing.setAddress(command.address());
         }
+    }
+
+    private void updatePhone(Tenant existing, UpdateTenantCommand command) {
         if (command.phone() != null) {
+            if (!PHONE_PATTERN.matcher(command.phone()).matches()) {
+                throw new IllegalArgumentException("Invalid phone format (digits 6-15)");
+            }
             existing.setPhone(command.phone());
         }
+    }
+
+    private void updateStatus(Tenant existing, UpdateTenantCommand command) {
         if (command.status() != null) {
+            if (!ALLOWED_STATUS.contains(command.status())) {
+                throw new IllegalArgumentException("Invalid status value");
+            }
             existing.setStatus(command.status());
         }
+    }
+
+    private void updateSubscription(Tenant existing, UpdateTenantCommand command) {
         if (command.subscriptionId() != null) {
+            subscriptionRepository.findById(command.subscriptionId())
+                    .orElseThrow(() -> new IllegalArgumentException("Subscription not found with ID: " + command.subscriptionId()));
             existing.setSubscriptionId(command.subscriptionId());
         }
+    }
+
+    private void updateSettings(Tenant existing, UpdateTenantCommand command) {
         if (command.allowIndependentDoctors() != null) {
             existing.setAllowIndependentDoctors(command.allowIndependentDoctors());
         }
@@ -165,8 +229,6 @@ public class TenantService {
         if (command.maxDoctors() != null) {
             existing.setMaxDoctors(command.maxDoctors());
         }
-        
-        return repository.save(existing);
     }
 
     public void deleteTenant(DeleteTenantCommand command) {

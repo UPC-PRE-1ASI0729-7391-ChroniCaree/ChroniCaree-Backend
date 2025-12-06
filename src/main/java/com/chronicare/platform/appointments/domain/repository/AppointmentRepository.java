@@ -1,26 +1,16 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Interface.java to edit this template
- */
 package com.chronicare.platform.appointments.domain.repository;
 
 import com.chronicare.platform.appointments.domain.model.aggregates.Appointment;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
+import java.util.UUID;
 
 public interface AppointmentRepository {
-
-    List<Appointment> findAll();
-
-    Optional<Appointment> findById(Long id);
-
-    List<Appointment> findByPatientId(Long patientId);
-
-    List<Appointment> findByDoctorId(Long doctorId);
-
     Appointment save(Appointment appointment);
-
-    void deleteById(Long id);
-
+    Optional<Appointment> findById(UUID appointmentId);
+    List<Appointment> findByDoctorId(String doctorId, String tenantId);
+    List<Appointment> findByPatientId(String patientId, String tenantId);
+    List<Appointment> findByDoctorAndDateRange(String doctorId, LocalDateTime start, LocalDateTime end, String tenantId);
+    void deleteById(UUID appointmentId);
 }

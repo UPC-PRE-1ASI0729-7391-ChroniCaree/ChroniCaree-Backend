@@ -4,6 +4,7 @@ import com.chronicare.platform.iam.infrastructure.authorization.sfs.pipeline.Bea
 import com.chronicare.platform.iam.infrastructure.authorization.sfs.pipeline.JwtAuthenticationEntryPoint;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -22,6 +23,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
@@ -56,20 +59,45 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
+    @Value("${cors.allowed.origins:http://localhost:4200,http://localhost:8080,http://localhost:11083,https://chornicare-backend-production.up.railway.app}")
+    private String corsAllowedOrigins;
+
+    @Value("${cors.allowed.methods:GET,POST,PUT,PATCH,DELETE,OPTIONS}")
+    private String corsAllowedMethods;
+
+    @Value("${cors.allowed.headers:*}")
+    private String corsAllowedHeaders;
+
+    @Value("${cors.allow.credentials:true}")
+    private boolean corsAllowCredentials;
+
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Permitir múltiples orígenes del frontend
-        configuration.setAllowedOrigins(List.of(
-            "http://localhost:4200",
-            "http://localhost:4201",
-            "http://127.0.0.1:4200",
-            "http://127.0.0.1:4201"
-        ));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
-        configuration.setAllowCredentials(true);
+        // Permitir múltiples orígenes del frontend (configurados por propiedad cors.allowed.origins)
+        List<String> allowed = Arrays.stream(corsAllowedOrigins.split(","))
+                                    .map(String::trim)
+                                    .filter(s -> !s.isEmpty())
+                                    .collect(Collectors.toList());
+        configuration.setAllowedOrigins(allowed);
+        
+        List<String> methods = Arrays.stream(corsAllowedMethods.split(","))
+                                    .map(String::trim)
+                                    .filter(s -> !s.isEmpty())
+                                    .collect(Collectors.toList());
+        configuration.setAllowedMethods(methods);
+        
+        if ("*".equals(corsAllowedHeaders)) {
+            configuration.setAllowedHeaders(List.of("*"));
+        } else {
+            List<String> headers = Arrays.stream(corsAllowedHeaders.split(","))
+                                        .map(String::trim)
+                                        .filter(s -> !s.isEmpty())
+                                        .collect(Collectors.toList());
+            configuration.setAllowedHeaders(headers);
+        }
+        
+        configuration.setExposedHeaders(List.of("Authorization", "Content-Type", "X-Total-Count"));
+        configuration.setAllowCredentials(corsAllowCredentials);
         configuration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

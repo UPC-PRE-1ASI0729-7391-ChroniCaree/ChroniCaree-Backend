@@ -15,6 +15,7 @@ import com.chronicare.platform.tenants.domain.valueobjects.TenantName;
  */
 public record UpdateTenantCommand(
     Long tenantId, 
+    Long adminUserId,
     TenantName name,
     String email,
     String address,
@@ -33,6 +34,6 @@ public record UpdateTenantCommand(
     
     // Constructor simplificado para solo actualizar el nombre (compatibilidad hacia atrás)
     public UpdateTenantCommand(Long tenantId, TenantName name) {
-        this(tenantId, name, null, null, null, null, null, null, null, null);
+        this(tenantId, null, name, null, null, null, null, null, null, null, null);
     }
 }

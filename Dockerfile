@@ -32,7 +32,7 @@ COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
 
 # Optimized JVM flags for Railway (512MB plan)
-ENTRYPOINT ["sh", "-c", "java --enable-preview \
+ENTRYPOINT ["sh", "-c", "java \
     -Xms128m \
     -Xmx384m \
     -XX:+UseG1GC \

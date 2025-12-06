@@ -1,5 +1,7 @@
 package com.chronicare.platform.alerts.domain.model.commands;
 
+import java.time.LocalDateTime;
+
 /**
  * Summary: Command to create a new alert
  */
@@ -13,8 +15,10 @@ public record CreateAlertCommand(
     String title,
     String message,
     String description,
+    String source,  // DEVICE, SYSTEM, MANUAL
     String sourceType,
     Long sourceId,
+    LocalDateTime detectedAt,
     String metadata,
     Integer priority,
     String expiresAt

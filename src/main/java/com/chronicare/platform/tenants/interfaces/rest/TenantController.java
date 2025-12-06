@@ -20,7 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * TenantController - expone endpoints REST usando commands/queries.
@@ -85,6 +84,7 @@ public class TenantController {
     }
 
     record UpdateTenantRequest(
+        Long adminUserId,
         String name,
         String email,
         String address,
@@ -117,8 +117,8 @@ public class TenantController {
     @Operation(summary = "List all tenants")
     public ResponseEntity<List<TenantResponse>> getAllTenants() {
         List<TenantResponse> resp = tenantService.getAllTenants().stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+            .map(this::toResponse)
+            .toList();
         return ResponseEntity.ok(resp);
     }
 
@@ -135,8 +135,8 @@ public class TenantController {
     @Operation(summary = "Get tenant by Admin User ID")
     public ResponseEntity<TenantResponse> getTenantByAdminUserId(@PathVariable Long userId) {
         java.util.logging.Logger logger = java.util.logging.Logger.getLogger(TenantController.class.getName());
-        logger.info("========== TenantController: GET /api/v1/tenants/by-admin/" + userId + " ==========");
-        logger.info("Calling tenantService.getTenantByAdminUserId(" + userId + ")");
+        logger.info(() -> "========== TenantController: GET /api/v1/tenants/by-admin/" + userId + " ==========");
+        logger.info(() -> "Calling tenantService.getTenantByAdminUserId(" + userId + ")");
         
         var result = tenantService.getTenantByAdminUserId(userId)
                 .map(this::toResponse)
@@ -167,22 +167,7 @@ public class TenantController {
     @PostMapping
     @Operation(summary = "Create new tenant")
     public ResponseEntity<TenantResponse> createTenant(@RequestBody CreateTenantRequest req) {
-        java.time.LocalDateTime regDate = null;
-        if (req.registrationDate() != null) {
-            // Handle ISO format with Z (UTC) by parsing to Instant then converting to LocalDateTime
-            try {
-                regDate = java.time.ZonedDateTime.parse(req.registrationDate()).toLocalDateTime();
-            } catch (Exception e) {
-                // Fallback or try LocalDateTime parse
-                try {
-                    regDate = java.time.LocalDateTime.parse(req.registrationDate());
-                } catch (Exception ex) {
-                    regDate = java.time.LocalDateTime.now();
-                }
-            }
-        } else {
-            regDate = java.time.LocalDateTime.now();
-        }
+        java.time.LocalDateTime regDate = resolveRegistrationDate(req.registrationDate());
 
         CreateTenantCommand cmd = new CreateTenantCommand(
             req.adminUserId(),
@@ -201,6 +186,21 @@ public class TenantController {
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(created));
     }
 
+    private java.time.LocalDateTime resolveRegistrationDate(String date) {
+        if (date == null) {
+            return java.time.LocalDateTime.now();
+        }
+        try {
+            return java.time.ZonedDateTime.parse(date).toLocalDateTime();
+        } catch (java.time.format.DateTimeParseException _) {
+            try {
+                return java.time.LocalDateTime.parse(date);
+            } catch (java.time.format.DateTimeParseException _) {
+                return java.time.LocalDateTime.now();
+            }
+        }
+    }
+
     @PutMapping("/{id}")
     @Operation(summary = "Update tenant by ID")
     public ResponseEntity<TenantResponse> updateTenant(@PathVariable Long id, @RequestBody UpdateTenantRequest req) {
@@ -208,6 +208,7 @@ public class TenantController {
         
         UpdateTenantCommand cmd = new UpdateTenantCommand(
             id, 
+            req.adminUserId(),
             tenantName,
             req.email(),
             req.address(),

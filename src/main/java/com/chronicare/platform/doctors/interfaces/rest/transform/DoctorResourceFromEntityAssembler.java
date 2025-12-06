@@ -34,7 +34,7 @@ public class DoctorResourceFromEntityAssembler {
             educationResources,
             doctor.canAcceptPatients(),
             doctor.belongsToTenant(),
-            LocalDateTime.ofInstant(doctor.getCreatedAt().toInstant(), ZoneId.systemDefault())
+            doctor.getCreatedAt()
         );
     }
 }

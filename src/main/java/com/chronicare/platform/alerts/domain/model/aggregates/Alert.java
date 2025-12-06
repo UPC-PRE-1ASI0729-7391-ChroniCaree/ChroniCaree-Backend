@@ -65,11 +65,21 @@ public class Alert {
     private String description;
 
     // Alert Data
+    @Enumerated(EnumType.STRING)
+    @Column(name = "source", length = 20)
+    private com.chronicare.platform.alerts.domain.model.valueobjects.AlertSource source;
+
     @Column(name = "source_type", length = 50)
     private String sourceType;
 
     @Column(name = "source_id")
     private Long sourceId;
+
+    @Column(name = "detected_at")
+    private LocalDateTime detectedAt;
+
+    @Embedded
+    private com.chronicare.platform.alerts.domain.model.valueobjects.AlertAssignment assignedTo;
 
     @Column(columnDefinition = "JSON")
     private String metadata;
@@ -145,8 +155,10 @@ public class Alert {
         this.title = command.title();
         this.message = command.message();
         this.description = command.description();
+        this.source = command.source() != null ? com.chronicare.platform.alerts.domain.model.valueobjects.AlertSource.fromCode(command.source()) : com.chronicare.platform.alerts.domain.model.valueobjects.AlertSource.SYSTEM;
         this.sourceType = command.sourceType();
         this.sourceId = command.sourceId();
+        this.detectedAt = command.detectedAt() != null ? command.detectedAt() : LocalDateTime.now();
         this.metadata = command.metadata();
         this.priority = command.priority() != null ? command.priority() : severity.getPriority();
         this.status = AlertStatus.ACTIVE;
@@ -157,6 +169,19 @@ public class Alert {
         if (command.expiresAt() != null) {
             this.expiresAt = LocalDateTime.parse(command.expiresAt().replace("Z", ""));
         }
+    }
+
+    // New Domain Methods for Spec
+    public void assign(Long userId, String role) {
+        this.assignedTo = new com.chronicare.platform.alerts.domain.model.valueobjects.AlertAssignment(userId, role);
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void suppress(LocalDateTime until, String reason) {
+        this.status = AlertStatus.DISMISSED;
+        this.resolvedAt = until;
+        this.resolutionNotes = "Suppressed: " + reason;
+        this.updatedAt = LocalDateTime.now();
     }
 
     // Domain Methods
@@ -224,9 +249,8 @@ public class Alert {
 
     public boolean needsEscalation(int minutesSinceCreation) {
         if (status != AlertStatus.ACTIVE) return false;
-        if (severity == AlertSeverity.CRITICAL && minutesSinceCreation >= 30) return true;
-        if (severity == AlertSeverity.HIGH && minutesSinceCreation >= 120) return true;
-        return false;
+        return (severity == AlertSeverity.CRITICAL && minutesSinceCreation >= 30) 
+            || (severity == AlertSeverity.HIGH && minutesSinceCreation >= 120);
     }
 
     // Getters
@@ -260,6 +284,9 @@ public class Alert {
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public LocalDateTime getExpiresAt() { return expiresAt; }
     public LocalDateTime getDeletedAt() { return deletedAt; }
+    public com.chronicare.platform.alerts.domain.model.valueobjects.AlertSource getSource() { return source; }
+    public LocalDateTime getDetectedAt() { return detectedAt; }
+    public com.chronicare.platform.alerts.domain.model.valueobjects.AlertAssignment getAssignedTo() { return assignedTo; }
 
     // Setters for JPA (minimal)
     public void setId(Long id) { this.id = id; }

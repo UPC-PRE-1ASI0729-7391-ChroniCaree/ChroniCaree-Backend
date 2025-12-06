@@ -42,7 +42,7 @@ public class Patient extends AuditableAbstractAggregateRoot<Patient> {
         this.lastName = command.lastName();
         this.email = command.email();
         this.dni = command.dni();
-        this.birthDate = LocalDate.parse(command.birthDate());
+        this.birthDate = parseBirthDate(command.birthDate());
         this.gender = command.gender();
         this.phone = command.phone();
         this.address = command.address();
@@ -71,12 +71,28 @@ public class Patient extends AuditableAbstractAggregateRoot<Patient> {
         this.lastName = command.lastName();
         this.email = command.email();
         this.dni = command.dni();
-        this.birthDate = LocalDate.parse(command.birthDate());
+        this.birthDate = parseBirthDate(command.birthDate());
         this.gender = command.gender();
         this.phone = command.phone();
         this.address = command.address();
         this.photoUrl = command.photoUrl();
         this.weight = command.weight();
         this.height = command.height();
+    }
+
+    private LocalDate parseBirthDate(String rawDate) {
+        if (rawDate == null || rawDate.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(rawDate);
+        } catch (java.time.format.DateTimeParseException _) {
+            // Try trimming time portion if comes as ISO datetime
+            try {
+                return java.time.OffsetDateTime.parse(rawDate).toLocalDate();
+            } catch (java.time.format.DateTimeParseException _) {
+                throw new IllegalArgumentException("Invalid birthDate format. Expected ISO date (yyyy-MM-dd)");
+            }
+        }
     }
 }

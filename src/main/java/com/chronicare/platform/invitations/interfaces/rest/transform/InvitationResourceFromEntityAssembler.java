@@ -20,8 +20,7 @@ public class InvitationResourceFromEntityAssembler {
             invitation.getStatus().name().toLowerCase(),
             invitation.getToken(),
             invitation.getExpiresAt(),
-            invitation.getCreatedAt() != null ? 
-                invitation.getCreatedAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime() : null,
+            invitation.getCreatedAt(),
             invitation.getAcceptedAt(),
             invitation.getRejectedAt()
         );

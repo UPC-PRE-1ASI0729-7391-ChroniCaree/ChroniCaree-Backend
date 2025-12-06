@@ -38,9 +38,61 @@ public class DiagnosisController {
         this.diagnosisQueryService = diagnosisQueryService;
     }
 
-    @GetMapping
-    @Operation(summary = "Get all diagnoses")
-    public ResponseEntity<List<DiagnosisResource>> getAllDiagnoses() {
+        @GetMapping
+        @Operation(summary = "Get all diagnoses (optional filter by patientId)")
+        @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'HOSPITAL_ADMIN', 'SYSTEM', 'PATIENT', 'TENANT_ADMIN')")
+        public ResponseEntity<List<DiagnosisResource>> getAllDiagnoses(
+            @RequestParam(required = false) String patientId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "20") Integer limit) {
+        if (patientId != null && !patientId.isBlank()) {
+            if (!patientId.matches("\\d+")) {
+                return ResponseEntity.badRequest().build();
+            }
+            Long pid = Long.parseLong(patientId);
+            var query = new GetDiagnosesByPatientIdQuery(pid);
+            var diagnoses = diagnosisQueryService.handle(query);
+            // Optional status filter
+            if (status != null && !status.isBlank()) {
+                diagnoses = diagnoses.stream()
+                        .filter(d -> d.getStatus() != null && status.equalsIgnoreCase(d.getStatus().name()))
+                        .toList();
+            }
+            // Date filters (ISO 8601)
+            java.time.Instant fromTs = null;
+            java.time.Instant toTs = null;
+            try {
+                if (from != null && !from.isBlank()) fromTs = java.time.Instant.parse(from);
+                if (to != null && !to.isBlank()) toTs = java.time.Instant.parse(to);
+            } catch (Exception ex) {
+                return ResponseEntity.badRequest().build();
+            }
+            if (fromTs != null || toTs != null) {
+                final java.time.Instant f = fromTs;
+                final java.time.Instant t = toTs;
+                diagnoses = diagnoses.stream()
+                        .filter(d -> {
+                                    var ts = d.getCreatedAt() != null ? d.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant() : null;
+                            if (ts == null) return false;
+                            if (f != null && ts.isBefore(f)) return false;
+                            if (t != null && ts.isAfter(t)) return false;
+                            return true;
+                        })
+                        .toList();
+            }
+            // pagination on filtered list
+            int fromIndex = Math.max(0, page * limit);
+            int toIndex = Math.min(diagnoses.size(), fromIndex + limit);
+            var pageContent = diagnoses.subList(fromIndex, toIndex);
+                var pageResources = pageContent.stream()
+                    .map(DiagnosisResourceFromEntityAssembler::toResourceFromEntity)
+                    .toList();
+            return ResponseEntity.ok(pageResources);
+        }
+
         var query = new GetAllDiagnosesQuery();
         var diagnoses = diagnosisQueryService.handle(query);
         var resources = diagnoses.stream()

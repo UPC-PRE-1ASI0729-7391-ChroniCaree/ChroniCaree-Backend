@@ -38,8 +38,32 @@ public class MedicationController {
     }
 
     @GetMapping
-    @Operation(summary = "Get all medications")
-    public ResponseEntity<List<MedicationResource>> getAllMedications() {
+    @Operation(summary = "Get all medications (optional filter by patientId)")
+        @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'HOSPITAL_ADMIN', 'SYSTEM', 'PATIENT', 'TENANT_ADMIN')")
+        public ResponseEntity<List<MedicationResource>> getAllMedications(
+            @RequestParam(required = false) String patientId,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "20") Integer limit) {
+        if (patientId != null && !patientId.isBlank()) {
+            var query = new GetMedicationsByPatientIdQuery(patientId);
+            var medications = medicationQueryService.handle(query);
+            // Optional server-side filtering by status
+            if (status != null && !status.isBlank()) {
+            medications = medications.stream()
+                .filter(m -> m.getStatus() != null && status.equalsIgnoreCase(m.getStatus().name()))
+                .toList();
+            }
+                // Simple controller-level pagination (fallback)
+                int fromIndex = Math.max(0, page * limit);
+                int toIndex = Math.min(medications.size(), fromIndex + limit);
+                var pageContent = medications.subList(fromIndex, toIndex);
+                var resources = pageContent.stream()
+                    .map(MedicationResourceFromEntityAssembler::toResourceFromEntity)
+                    .toList();
+            return ResponseEntity.ok(resources);
+        }
+
         var query = new GetAllMedicationsQuery();
         var medications = medicationQueryService.handle(query);
         var resources = medications.stream()
@@ -60,10 +84,23 @@ public class MedicationController {
 
     @GetMapping("/patient/{patientId}")
     @Operation(summary = "Get medications by patient ID")
-    public ResponseEntity<List<MedicationResource>> getMedicationsByPatient(@PathVariable String patientId) {
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'HOSPITAL_ADMIN', 'SYSTEM', 'PATIENT', 'TENANT_ADMIN')")
+    public ResponseEntity<List<MedicationResource>> getMedicationsByPatient(@PathVariable String patientId,
+                                                                           @RequestParam(required = false) String status,
+                                                                           @RequestParam(defaultValue = "0") Integer page,
+                                                                           @RequestParam(defaultValue = "20") Integer limit) {
         var query = new GetMedicationsByPatientIdQuery(patientId);
         var medications = medicationQueryService.handle(query);
-        var resources = medications.stream()
+        // Optional status filter
+        if (status != null && !status.isBlank()) {
+            medications = medications.stream()
+                    .filter(m -> m.getStatus() != null && status.equalsIgnoreCase(m.getStatus().name()))
+                    .toList();
+        }
+        int fromIndex = Math.max(0, page * limit);
+        int toIndex = Math.min(medications.size(), fromIndex + limit);
+        var pageContent = medications.subList(fromIndex, toIndex);
+        var resources = pageContent.stream()
                 .map(MedicationResourceFromEntityAssembler::toResourceFromEntity)
                 .toList();
         return ResponseEntity.ok(resources);

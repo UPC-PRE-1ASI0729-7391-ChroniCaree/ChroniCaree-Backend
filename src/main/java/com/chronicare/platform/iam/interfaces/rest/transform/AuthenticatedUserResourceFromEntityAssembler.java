@@ -19,7 +19,7 @@ public class AuthenticatedUserResourceFromEntityAssembler {
             user.getId(), 
             user.getEmailAddress(),
             user.getName(),
-            user.getRole().getName().toLowerCase(),
+            user.getRole().getName().toUpperCase(),
             user.getTenantId(),
             null, // tenant not provided
             null  // doctorId not provided
@@ -67,7 +67,7 @@ public class AuthenticatedUserResourceFromEntityAssembler {
             user.getId(), 
             user.getEmailAddress(),
             user.getName(),
-            user.getRole().getName().toLowerCase(),
+            user.getRole().getName().toUpperCase(),
             user.getTenantId(),
             tenantInfo,
             doctorId
