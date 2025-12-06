@@ -9,6 +9,25 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+/**
+ * Tenant Aggregate Root
+ *
+ * @summary
+ * Represents the core Tenant domain entity, acting as the aggregate root
+ * responsible for encapsulating identity, administrative ownership, and
+ * configuration settings within the multi-tenant platform.
+ * Domain Responsibilities:
+ * - Maintain invariant of unique tenant name across the platform
+ * - Represent ownership through the adminUserId relationship
+ * - Hold subscription linkage and registration metadata
+ * - Expose controlled mutation operations (e.g., updateName)
+ * - Capture configuration settings used by the tenant's operational rules
+ * Notes:
+ * - Uses TenantName value object to ensure name-level validation and integrity
+ * - Builder pattern supported for flexible construction
+ * - Designed for clean persistence mapping with JPA annotations
+ */
+
 @Entity
 @Table(name = "tenants", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"name"})
