@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalTime;
 
 /**
- * Schedule Entry Resource
+ * Summary: Schedule Entry Resource
  */
 public record ScheduleEntryResource(
     @JsonProperty("dayOfWeek") String dayOfWeek,

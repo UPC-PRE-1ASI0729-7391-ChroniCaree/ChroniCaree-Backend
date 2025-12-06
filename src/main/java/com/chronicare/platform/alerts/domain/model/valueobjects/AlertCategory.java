@@ -1,7 +1,7 @@
 package com.chronicare.platform.alerts.domain.model.valueobjects;
 
 /**
- * Alert Category Value Object
+ * Summary: Alert Category Value Object
  * Defines the categories of alerts
  */
 public enum AlertCategory {

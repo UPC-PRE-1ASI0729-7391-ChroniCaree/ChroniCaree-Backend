@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 /**
- * Command to update an existing appointment
+ * Summary: Command to update an existing appointment
  */
 public record UpdateAppointmentCommand(
     Long appointmentId,

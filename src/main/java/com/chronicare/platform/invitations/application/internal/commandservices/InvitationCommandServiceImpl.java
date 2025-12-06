@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Implementation of Invitation Command Service
+ * Summary: Implementation of Invitation Command Service
  */
 @Service
 public class InvitationCommandServiceImpl implements InvitationCommandService {

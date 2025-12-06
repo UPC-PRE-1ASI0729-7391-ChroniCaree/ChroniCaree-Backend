@@ -3,7 +3,7 @@ package com.chronicare.platform.attachments.interfaces.rest.resources;
 import java.time.LocalDateTime;
 
 /**
- * Resource representation for Attachment
+ * Summary: Resource representation for Attachment
  */
 public record AttachmentResource(
     Long id,

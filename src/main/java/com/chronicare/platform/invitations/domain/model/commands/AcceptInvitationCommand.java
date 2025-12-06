@@ -1,7 +1,7 @@
 package com.chronicare.platform.invitations.domain.model.commands;
 
 /**
- * Command to accept an invitation and create a doctor account
+ * Summary: Command to accept an invitation and create a doctor account
  */
 public record AcceptInvitationCommand(
     Long invitationId,

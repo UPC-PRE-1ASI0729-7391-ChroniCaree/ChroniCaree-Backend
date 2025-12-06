@@ -1,7 +1,7 @@
 package com.chronicare.platform.invitations.domain.model.queries;
 
 /**
- * Query to get invitation by email and tenant ID
+ * Summary: Query to get invitation by email and tenant ID
  */
 public record GetInvitationByEmailAndTenantIdQuery(String email, Long tenantId) {
     public GetInvitationByEmailAndTenantIdQuery {

@@ -3,7 +3,7 @@ package com.chronicare.platform.doctors.domain.model.valueobjects;
 import java.time.LocalDateTime;
 
 /**
- * Appointment Detail Value Object
+ * Summary: Appointment Detail Value Object
  * Represents a detailed appointment for doctor dashboard
  */
 public record AppointmentDetail(

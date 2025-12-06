@@ -1,7 +1,7 @@
 package com.chronicare.platform.alerts.domain.model.commands;
 
 /**
- * Command to acknowledge an alert
+ * Summary: Command to acknowledge an alert
  */
 public record AcknowledgeAlertCommand(
     Long alertId,

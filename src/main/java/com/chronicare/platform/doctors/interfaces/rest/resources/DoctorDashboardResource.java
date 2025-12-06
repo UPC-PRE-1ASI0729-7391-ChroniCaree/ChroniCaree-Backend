@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 /**
- * Doctor Dashboard Resource
+ * Summary: Doctor Dashboard Resource
  */
 public record DoctorDashboardResource(
     @JsonProperty("doctorId") Long doctorId,

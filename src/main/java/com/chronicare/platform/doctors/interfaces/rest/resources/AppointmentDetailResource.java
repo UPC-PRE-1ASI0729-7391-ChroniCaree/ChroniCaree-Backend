@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
 
 /**
- * Appointment Detail Resource
+ * Summary: Appointment Detail Resource
  */
 public record AppointmentDetailResource(
     @JsonProperty("appointmentId") Long appointmentId,

@@ -1,7 +1,7 @@
 package com.chronicare.platform.invitations.domain.model.queries;
 
 /**
- * Query to get invitation by token
+ * Summary: Query to get invitation by token
  */
 public record GetInvitationByTokenQuery(String token) {
     public GetInvitationByTokenQuery {

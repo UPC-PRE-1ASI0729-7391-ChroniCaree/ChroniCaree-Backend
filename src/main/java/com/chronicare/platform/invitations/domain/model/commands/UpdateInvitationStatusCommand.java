@@ -1,7 +1,7 @@
 package com.chronicare.platform.invitations.domain.model.commands;
 
 /**
- * Command to update invitation status
+ * Summary: Command to update invitation status
  */
 public record UpdateInvitationStatusCommand(
     Long invitationId,

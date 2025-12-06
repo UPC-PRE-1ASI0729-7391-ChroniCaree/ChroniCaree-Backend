@@ -1,7 +1,7 @@
 package com.chronicare.platform.alerts.domain.model.valueobjects;
 
 /**
- * Alert Severity Value Object
+ * Summary: Alert Severity Value Object
  * Defines the severity levels of alerts
  */
 public enum AlertSeverity {

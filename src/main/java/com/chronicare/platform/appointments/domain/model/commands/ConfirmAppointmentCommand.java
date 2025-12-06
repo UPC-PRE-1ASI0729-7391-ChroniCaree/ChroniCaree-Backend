@@ -1,7 +1,7 @@
 package com.chronicare.platform.appointments.domain.model.commands;
 
 /**
- * Command to confirm an appointment
+ * Summary: Command to confirm an appointment
  */
 public record ConfirmAppointmentCommand(Long appointmentId) {
     public ConfirmAppointmentCommand {

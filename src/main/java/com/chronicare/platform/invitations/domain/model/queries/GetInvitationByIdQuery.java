@@ -1,7 +1,7 @@
 package com.chronicare.platform.invitations.domain.model.queries;
 
 /**
- * Query to get invitation by ID
+ * Summary: Query to get invitation by ID
  */
 public record GetInvitationByIdQuery(Long invitationId) {
     public GetInvitationByIdQuery {

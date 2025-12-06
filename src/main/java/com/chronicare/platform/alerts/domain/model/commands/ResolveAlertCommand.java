@@ -1,7 +1,7 @@
 package com.chronicare.platform.alerts.domain.model.commands;
 
 /**
- * Command to resolve an alert
+ * Summary: Command to resolve an alert
  */
 public record ResolveAlertCommand(
     Long alertId,

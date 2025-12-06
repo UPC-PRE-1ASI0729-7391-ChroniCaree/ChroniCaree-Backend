@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 /**
- * Update Appointment Request Resource
+ * Summary: Update Appointment Request Resource
  */
 public record UpdateAppointmentResource(
     @JsonProperty("appointmentDate") LocalDate appointmentDate,

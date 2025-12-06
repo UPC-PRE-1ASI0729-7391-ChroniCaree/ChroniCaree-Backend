@@ -3,7 +3,7 @@ package com.chronicare.platform.doctors.domain.model.valueobjects;
 import java.time.LocalTime;
 
 /**
- * Schedule Entry Value Object
+ * Summary: Schedule Entry Value Object
  * Represents a doctor's schedule entry
  */
 public record ScheduleEntry(

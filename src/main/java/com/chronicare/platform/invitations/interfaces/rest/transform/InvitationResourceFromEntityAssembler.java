@@ -6,7 +6,7 @@ import com.chronicare.platform.invitations.interfaces.rest.resources.InvitationR
 import java.time.ZoneId;
 
 /**
- * Assembler to transform Invitation entity to InvitationResource
+ * Summary: Assembler to transform Invitation entity to InvitationResource
  */
 public class InvitationResourceFromEntityAssembler {
 

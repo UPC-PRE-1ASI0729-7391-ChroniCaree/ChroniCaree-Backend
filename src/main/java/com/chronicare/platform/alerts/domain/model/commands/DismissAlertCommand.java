@@ -1,7 +1,7 @@
 package com.chronicare.platform.alerts.domain.model.commands;
 
 /**
- * Command to dismiss an alert
+ * Summary: Command to dismiss an alert
  */
 public record DismissAlertCommand(
     Long alertId,

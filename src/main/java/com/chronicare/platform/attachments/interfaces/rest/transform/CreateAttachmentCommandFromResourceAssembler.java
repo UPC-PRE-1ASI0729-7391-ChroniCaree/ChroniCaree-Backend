@@ -4,7 +4,7 @@ import com.chronicare.platform.attachments.domain.model.commands.CreateAttachmen
 import com.chronicare.platform.attachments.interfaces.rest.resources.CreateAttachmentResource;
 
 /**
- * Assembler to transform CreateAttachmentResource to CreateAttachmentCommand
+ * Summary: Assembler to transform CreateAttachmentResource to CreateAttachmentCommand
  */
 public class CreateAttachmentCommandFromResourceAssembler {
 

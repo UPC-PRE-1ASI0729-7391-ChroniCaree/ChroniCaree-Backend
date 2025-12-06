@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 /**
- * Command to create a new appointment
+ * Summary: Command to create a new appointment
  */
 public record CreateAppointmentCommand(
     Long patientId,

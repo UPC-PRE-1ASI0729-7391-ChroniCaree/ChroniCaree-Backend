@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Appointment Query Service Implementation
+ * Summary: Appointment Query Service Implementation
  */
 @Service
 public class AppointmentQueryServiceImpl implements AppointmentQueryService {

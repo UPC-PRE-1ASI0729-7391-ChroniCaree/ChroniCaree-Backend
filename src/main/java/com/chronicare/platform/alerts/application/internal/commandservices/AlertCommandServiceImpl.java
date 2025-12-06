@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 /**
- * Implementation of Alert Command Service
+ * Summary: Implementation of Alert Command Service
  */
 @Service
 @Transactional

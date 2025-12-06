@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Implementation of Invitation Query Service
+ * Summary: Implementation of Invitation Query Service
  */
 @Service
 public class InvitationQueryServiceImpl implements InvitationQueryService {

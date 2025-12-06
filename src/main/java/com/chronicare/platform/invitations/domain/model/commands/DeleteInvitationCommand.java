@@ -1,7 +1,7 @@
 package com.chronicare.platform.invitations.domain.model.commands;
 
 /**
- * Command to delete/cancel an invitation
+ * Summary: Command to delete/cancel an invitation
  */
 public record DeleteInvitationCommand(Long invitationId) {
     public DeleteInvitationCommand {

@@ -1,7 +1,7 @@
 package com.chronicare.platform.appointments.domain.model.commands;
 
 /**
- * Command to cancel an appointment
+ * Summary: Command to cancel an appointment
  */
 public record CancelAppointmentCommand(
     Long appointmentId,

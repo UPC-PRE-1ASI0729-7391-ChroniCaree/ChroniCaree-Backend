@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 /**
- * Implementation of AttachmentCommandService
+ * Summary: Implementation of AttachmentCommandService
  */
 @Service
 @Transactional

@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
- * Diagnosis Aggregate Root
+ * Summary: Diagnosis Aggregate Root
  * Represents a medical diagnosis for a patient
  */
 @Entity

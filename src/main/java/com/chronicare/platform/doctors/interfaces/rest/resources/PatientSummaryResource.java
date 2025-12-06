@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
 
 /**
- * Patient Summary Resource
+ * Summary: Patient Summary Resource
  */
 public record PatientSummaryResource(
     @JsonProperty("patientId") Long patientId,

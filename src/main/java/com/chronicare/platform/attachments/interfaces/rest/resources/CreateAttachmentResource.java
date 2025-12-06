@@ -1,7 +1,7 @@
 package com.chronicare.platform.attachments.interfaces.rest.resources;
 
 /**
- * Resource for creating an Attachment
+ * Summary: Resource for creating an Attachment
  */
 public record CreateAttachmentResource(
     String fileName,

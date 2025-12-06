@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Doctor Aggregate Root
+ * Summary: Doctor Aggregate Root
  * Represents a doctor in the system (independent or tenant-based)
  */
 @Entity

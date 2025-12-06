@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 /**
- * Create Appointment Request Resource
+ * Summary: Create Appointment Request Resource
  */
 public record CreateAppointmentResource(
     @JsonProperty("patientId") Long patientId,

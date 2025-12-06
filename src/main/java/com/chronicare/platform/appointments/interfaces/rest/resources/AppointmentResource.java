@@ -3,7 +3,7 @@ package com.chronicare.platform.appointments.interfaces.rest.resources;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Appointment Response Resource
+ * Summary: Appointment Response Resource
  */
 public record AppointmentResource(
     @JsonProperty("id") Long id,

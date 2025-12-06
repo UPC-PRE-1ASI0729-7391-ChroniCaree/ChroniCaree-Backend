@@ -1,7 +1,7 @@
 package com.chronicare.platform.iam.domain.model.commands;
 
 /**
- * Command to register a Hospital Admin with their Hospital (Tenant)
+ * Summary: Command to register a Hospital Admin with their Hospital (Tenant)
  * This creates both entities in a single transaction
  */
 public record RegisterHospitalAdminCommand(
