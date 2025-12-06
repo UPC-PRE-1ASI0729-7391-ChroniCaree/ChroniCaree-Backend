@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
- * Resource representing a Diagnosis
+ * Summary: Resource representing a Diagnosis
  */
 public record DiagnosisResource(
         Long id,

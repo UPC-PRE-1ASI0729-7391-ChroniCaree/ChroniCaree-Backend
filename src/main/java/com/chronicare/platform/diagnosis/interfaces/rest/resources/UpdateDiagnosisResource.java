@@ -6,7 +6,7 @@ import com.chronicare.platform.diagnosis.domain.model.valueobjects.DiagnosisStat
 import java.time.LocalDate;
 
 /**
- * Resource for updating an existing Diagnosis
+ * Summary: Resource for updating an existing Diagnosis
  */
 public record UpdateDiagnosisResource(
         String icd10Code,

@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 /**
- * Implementation of DiagnosisCommandService
+ * Summary: Implementation of DiagnosisCommandService
  * Handles command operations for diagnoses
  */
 @Service

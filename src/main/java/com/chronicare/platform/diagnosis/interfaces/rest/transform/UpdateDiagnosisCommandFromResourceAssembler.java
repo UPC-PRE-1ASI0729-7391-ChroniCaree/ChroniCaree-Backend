@@ -4,7 +4,7 @@ import com.chronicare.platform.diagnosis.domain.model.commands.UpdateDiagnosisCo
 import com.chronicare.platform.diagnosis.interfaces.rest.resources.UpdateDiagnosisResource;
 
 /**
- * Assembler to convert UpdateDiagnosisResource to UpdateDiagnosisCommand
+ * Summary: Assembler to convert UpdateDiagnosisResource to UpdateDiagnosisCommand
  */
 public class UpdateDiagnosisCommandFromResourceAssembler {
 

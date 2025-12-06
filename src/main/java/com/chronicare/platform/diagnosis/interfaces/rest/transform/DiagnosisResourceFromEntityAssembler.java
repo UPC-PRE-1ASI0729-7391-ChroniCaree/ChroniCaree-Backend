@@ -4,7 +4,7 @@ import com.chronicare.platform.diagnosis.domain.model.aggregates.Diagnosis;
 import com.chronicare.platform.diagnosis.interfaces.rest.resources.DiagnosisResource;
 
 /**
- * Assembler to convert Diagnosis entity to DiagnosisResource
+ * Summary: Assembler to convert Diagnosis entity to DiagnosisResource
  */
 public class DiagnosisResourceFromEntityAssembler {
 

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Implementation of DiagnosisQueryService
+ * Summary: Implementation of DiagnosisQueryService
  * Handles query operations for diagnoses
  */
 @Service

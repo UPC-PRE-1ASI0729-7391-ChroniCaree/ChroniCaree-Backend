@@ -6,7 +6,7 @@ import com.chronicare.platform.diagnosis.domain.model.valueobjects.DiagnosisStat
 import java.time.LocalDate;
 
 /**
- * Command to create a new diagnosis
+ * Summary: Command to create a new diagnosis
  */
 public record CreateDiagnosisCommand(
         Long patientId,

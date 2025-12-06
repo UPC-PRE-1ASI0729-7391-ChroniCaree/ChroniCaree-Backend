@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * REST Controller for Diagnosis management
+ * Summary: REST Controller for Diagnosis management
  */
 @RestController
 @RequestMapping(value = "/api/v1/diagnoses", produces = MediaType.APPLICATION_JSON_VALUE)

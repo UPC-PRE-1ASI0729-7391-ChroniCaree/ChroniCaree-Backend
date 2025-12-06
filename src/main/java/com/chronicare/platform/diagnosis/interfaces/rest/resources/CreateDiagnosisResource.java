@@ -6,7 +6,7 @@ import com.chronicare.platform.diagnosis.domain.model.valueobjects.DiagnosisStat
 import java.time.LocalDate;
 
 /**
- * Resource for creating a new Diagnosis
+ * Summary: Resource for creating a new Diagnosis
  */
 public record CreateDiagnosisResource(
         Long patientId,

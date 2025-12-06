@@ -6,7 +6,7 @@ import com.chronicare.platform.diagnosis.domain.model.valueobjects.DiagnosisStat
 import java.time.LocalDate;
 
 /**
- * Command to update an existing diagnosis
+ * Summary: Command to update an existing diagnosis
  */
 public record UpdateDiagnosisCommand(
         Long id,
