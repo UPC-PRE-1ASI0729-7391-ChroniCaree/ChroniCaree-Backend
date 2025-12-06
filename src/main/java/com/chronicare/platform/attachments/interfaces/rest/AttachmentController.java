@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * REST Controller for Attachment management
+ * Summary: REST Controller for Attachment management
  */
 @RestController
 @RequestMapping(value = "/api/v1/attachments", produces = MediaType.APPLICATION_JSON_VALUE)

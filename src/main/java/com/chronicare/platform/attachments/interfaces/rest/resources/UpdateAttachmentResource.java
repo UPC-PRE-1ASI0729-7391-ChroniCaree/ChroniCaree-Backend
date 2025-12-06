@@ -1,7 +1,7 @@
 package com.chronicare.platform.attachments.interfaces.rest.resources;
 
 /**
- * Resource for updating an Attachment
+ * Summary: Resource for updating an Attachment
  */
 public record UpdateAttachmentResource(
     String fileName,

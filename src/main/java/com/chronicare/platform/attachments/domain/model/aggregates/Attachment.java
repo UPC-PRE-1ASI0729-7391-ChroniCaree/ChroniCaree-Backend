@@ -8,7 +8,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 /**
- * Attachment Aggregate Root
+ * Summary: Attachment Aggregate Root
  * Represents a file attachment in the system
  */
 @Entity

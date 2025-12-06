@@ -4,7 +4,7 @@ import com.chronicare.platform.attachments.domain.model.aggregates.Attachment;
 import com.chronicare.platform.attachments.interfaces.rest.resources.AttachmentResource;
 
 /**
- * Assembler to transform Attachment entity to AttachmentResource
+ * Summary: Assembler to transform Attachment entity to AttachmentResource
  */
 public class AttachmentResourceFromEntityAssembler {
 

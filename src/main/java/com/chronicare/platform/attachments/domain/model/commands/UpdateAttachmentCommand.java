@@ -1,7 +1,7 @@
 package com.chronicare.platform.attachments.domain.model.commands;
 
 /**
- * Command to update an existing Attachment
+ * Summary: Command to update an existing Attachment
  */
 public record UpdateAttachmentCommand(
     Long attachmentId,

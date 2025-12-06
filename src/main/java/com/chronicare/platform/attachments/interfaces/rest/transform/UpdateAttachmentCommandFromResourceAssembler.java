@@ -4,7 +4,7 @@ import com.chronicare.platform.attachments.domain.model.commands.UpdateAttachmen
 import com.chronicare.platform.attachments.interfaces.rest.resources.UpdateAttachmentResource;
 
 /**
- * Assembler to transform UpdateAttachmentResource to UpdateAttachmentCommand
+ * Summary: Assembler to transform UpdateAttachmentResource to UpdateAttachmentCommand
  */
 public class UpdateAttachmentCommandFromResourceAssembler {
 
