@@ -11,9 +11,17 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Implementation of MedicationQueryService
- * Handles query operations for medications
+ * MedicationQueryService Implementation
+ *
+ * @summary
+ * Provides read-only query operations for retrieving Medication aggregates.
+ * Business rules enforced:
+ * - Queries run in read-only mode to ensure consistency.
+ * - Supports retrieval of medications by ID, patient ID, and complete listing.
+ * - Respects CQRS separation by exposing only read-side operations.
+ *
  */
+
 @Service
 @Transactional(readOnly = true)
 public class MedicationQueryServiceImpl implements MedicationQueryService {
