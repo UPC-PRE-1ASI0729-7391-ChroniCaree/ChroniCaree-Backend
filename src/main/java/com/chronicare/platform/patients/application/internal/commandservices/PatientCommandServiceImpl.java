@@ -6,10 +6,11 @@ import com.chronicare.platform.patients.domain.commands.DeletePatientCommand;
 import com.chronicare.platform.patients.domain.commands.UpdatePatientCommand;
 import com.chronicare.platform.patients.domain.repository.PatientRepository;
 import com.chronicare.platform.patients.domain.services.PatientCommandService;
+import com.chronicare.platform.iam.domain.model.repositories.UserRepository;
+import com.chronicare.platform.doctors.infrastructure.persistence.jpa.repositories.DoctorRepository;
+import com.chronicare.platform.tenants.domain.repository.TenantRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
 
 /**
  * Implementation of the PatientCommandService.
@@ -25,6 +26,7 @@ import java.time.LocalDate;
  * Business rules enforced:
  * - No two patients can share the same DNI.
  * - Patient must exist before being updated, deleted, or assigned/unassigned to a doctor.
+ * - User, Doctor (if assigned), and Tenant (if provided) must exist.
  *
  * All methods run within transactional boundaries to ensure data consistency.
  */
@@ -32,18 +34,44 @@ import java.time.LocalDate;
 
 @Service
 public class PatientCommandServiceImpl implements PatientCommandService {
+    private static final String PATIENT_NOT_FOUND = "Patient not found";
+    
     private final PatientRepository patientRepository;
+    private final UserRepository userRepository;
+    private final DoctorRepository doctorRepository;
+    private final TenantRepository tenantRepository;
 
-    public PatientCommandServiceImpl(PatientRepository patientRepository) {
+    public PatientCommandServiceImpl(
+            PatientRepository patientRepository,
+            UserRepository userRepository,
+            DoctorRepository doctorRepository,
+            TenantRepository tenantRepository) {
         this.patientRepository = patientRepository;
+        this.userRepository = userRepository;
+        this.doctorRepository = doctorRepository;
+        this.tenantRepository = tenantRepository;
     }
 
     @Override
     @Transactional
     public Patient handle(CreatePatientCommand command) {
+        // Validate DNI uniqueness
         if (patientRepository.existsByDni(command.dni())) {
             throw new IllegalArgumentException("Patient with DNI " + command.dni().value() + " already exists");
         }
+
+        // Validate userId exists
+        if (command.userId() != null) {
+            userRepository.findById(command.userId())
+                    .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + command.userId()));
+        }
+
+        // Validate tenantId exists (if provided)
+        if (command.tenantId() != null) {
+            tenantRepository.findById(command.tenantId())
+                    .orElseThrow(() -> new IllegalArgumentException("Tenant not found with ID: " + command.tenantId()));
+        }
+
         var patient = new Patient(command);
         return patientRepository.save(patient);
     }
@@ -52,7 +80,7 @@ public class PatientCommandServiceImpl implements PatientCommandService {
     @Transactional
     public Patient handle(UpdatePatientCommand command) {
         var patient = patientRepository.findById(command.patientId())
-                .orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+                .orElseThrow(() -> new IllegalArgumentException(PATIENT_NOT_FOUND));
         patient.update(command);
         return patientRepository.save(patient);
     }
@@ -61,7 +89,7 @@ public class PatientCommandServiceImpl implements PatientCommandService {
     @Transactional
     public void handle(DeletePatientCommand command) {
         if (!patientRepository.existsById(command.patientId())) {
-            throw new IllegalArgumentException("Patient not found");
+            throw new IllegalArgumentException(PATIENT_NOT_FOUND);
         }
         patientRepository.deleteById(command.patientId());
     }
@@ -70,7 +98,14 @@ public class PatientCommandServiceImpl implements PatientCommandService {
     @Transactional
     public Patient handleAssignDoctor(Long patientId, Long doctorId) {
         var patient = patientRepository.findById(patientId)
-                .orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+                .orElseThrow(() -> new IllegalArgumentException(PATIENT_NOT_FOUND));
+        
+        // Validate doctor exists
+        if (doctorId != null) {
+            doctorRepository.findById(doctorId)
+                    .orElseThrow(() -> new IllegalArgumentException("Doctor not found with ID: " + doctorId));
+        }
+        
         patient.assignDoctor(doctorId);
         return patientRepository.save(patient);
     }
@@ -79,7 +114,7 @@ public class PatientCommandServiceImpl implements PatientCommandService {
     @Transactional
     public Patient handleUnassignDoctor(Long patientId) {
         var patient = patientRepository.findById(patientId)
-                .orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+                .orElseThrow(() -> new IllegalArgumentException(PATIENT_NOT_FOUND));
         patient.unassignDoctor();
         return patientRepository.save(patient);
     }

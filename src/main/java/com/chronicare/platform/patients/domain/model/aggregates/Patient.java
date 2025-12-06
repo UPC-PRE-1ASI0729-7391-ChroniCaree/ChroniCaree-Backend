@@ -34,6 +34,7 @@ public class Patient extends AuditableAbstractAggregateRoot<Patient> {
     private String photoUrl;
     private Double weight;
     private Double height;
+    private Double bmi;
 
     public Patient(CreatePatientCommand command) {
         this.userId = command.userId();
@@ -49,6 +50,7 @@ public class Patient extends AuditableAbstractAggregateRoot<Patient> {
         this.photoUrl = command.photoUrl();
         this.weight = command.weight();
         this.height = command.height();
+        this.bmi = calculateBMI(command.weight(), command.height());
     }
 
     /**
@@ -78,6 +80,14 @@ public class Patient extends AuditableAbstractAggregateRoot<Patient> {
         this.photoUrl = command.photoUrl();
         this.weight = command.weight();
         this.height = command.height();
+        this.bmi = calculateBMI(command.weight(), command.height());
+    }
+
+    private Double calculateBMI(Double weight, Double height) {
+        if (weight != null && height != null && weight > 0 && height > 0) {
+            return weight / (height * height);
+        }
+        return null;
     }
 
     private LocalDate parseBirthDate(String rawDate) {
