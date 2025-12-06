@@ -3,6 +3,7 @@ package com.chronicare.platform.iam.interfaces.rest.resources;
 import jakarta.validation.constraints.NotBlank;
 
 /**
+ * Summary:
  * Resource for registering a Hospital Admin with their Hospital (Tenant)
  * Creates both User (hospital_admin) and Tenant in a single transaction
  * 

@@ -3,7 +3,7 @@ package com.chronicare.platform.iam.domain.model.commands;
 import com.chronicare.platform.iam.domain.model.valueobjects.Roles;
 
 /**
- * Command to register a new user
+ * Summary: Command to register a new user
  * @param email User email
  * @param password Plain text password (will be hashed)
  * @param name Full name
