@@ -13,6 +13,20 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * MedicalRecordQueryService Implementation
+ *
+ * @summary
+ * Handles Medical Record query operations and provides read-optimized access
+ * to MedicalRecord aggregates.
+ * Business rules enforced:
+ * - Queries operate in read-only mode to ensure data integrity.
+ * - Supports retrieval of medical records by ID, patient ID, doctor ID, and full listing.
+ * - Ensures query-side separation aligned with CQRS principles.
+ *
+ */
+
+
 @Service
 public class MedicalRecordQueryServiceImpl implements MedicalRecordQueryService {
     private final MedicalRecordRepository medicalRecordRepository;

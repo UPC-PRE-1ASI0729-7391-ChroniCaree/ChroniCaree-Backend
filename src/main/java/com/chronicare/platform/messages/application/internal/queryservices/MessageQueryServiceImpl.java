@@ -11,9 +11,17 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Implementation of MessageQueryService
- * Handles query operations for messages
+ * MessageQueryService Implementation
+ *
+ * @summary
+ * Provides read-only query operations for retrieving Message aggregates.
+ * Business rules enforced:
+ * - Queries execute in read-only mode to ensure data integrity.
+ * - Supports retrieval of messages by ID, thread ID, and complete listing.
+ * - Adheres to CQRS principles by exposing only read-side operations.
+ *
  */
+
 @Service
 @Transactional(readOnly = true)
 public class MessageQueryServiceImpl implements MessageQueryService {

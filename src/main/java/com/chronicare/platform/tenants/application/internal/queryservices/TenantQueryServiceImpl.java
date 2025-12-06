@@ -14,8 +14,23 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 /**
- * Tenant Query Service Implementation
+ * TenantQueryServiceImpl
+ *
+ * @summary
+ * Provides aggregated dashboard metrics for tenants by executing optimized
+ * SQL-based queries and combining domain information with real-time usage data.
+ * Key responsibilities:
+ * - Retrieve tenant profile and validate existence
+ * - Aggregate doctors, patients, appointments, and alerts statistics
+ * - Compute monthly and total revenue for tenant accounts
+ * - Build quota usage information from tenant configuration
+ * - Provide a unified DashboardStats response for frontend analytics
+ * Notes:
+ * - All metrics are fetched using direct SQL for performance
+ * - Null-safe defaults are applied for tenant fields and maximum quotas
+ * - Uses JdbcTemplate to efficiently query relational data
  */
+
 @Service
 public class TenantQueryServiceImpl implements TenantQueryService {
     

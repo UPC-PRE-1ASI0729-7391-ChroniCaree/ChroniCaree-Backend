@@ -26,6 +26,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Implementation of the PatientQueryService.
+ *
+ * @summary
+ * Provides read-side operations for retrieving patient data, supporting both
+ * simple queries and complex dashboard aggregation using SQL-based projections.
+ * Responsibilities:
+ * - Fetch patient entities by ID, userId, and tenant with pagination support.
+ * - Build the PatientDashboard view by aggregating appointments, medications,
+ *   alerts, vital signs, and patient statistics using optimized JDBC queries.
+ * - Convert raw SQL result sets into strongly typed domain value objects.
+ * Features:
+ * - Efficient read-only transactions for all query operations.
+ * - Uses JdbcTemplate for high-performance joins and summary projections.
+ * - Ensures clean separation between command and query responsibilities (CQRS).
+ * Notes:
+ * - Dashboard enrichment includes: upcoming appointments, active medications,
+ *   active alerts, latest vital signs, and several aggregate counters.
+ * - All date, numeric, and null conversions are safely normalized to domain types.
+ */
+
+
 @Service
 public class PatientQueryServiceImpl implements PatientQueryService {
     private final PatientRepository patientRepository;

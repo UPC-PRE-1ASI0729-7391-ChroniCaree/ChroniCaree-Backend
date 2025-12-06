@@ -14,6 +14,22 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * SubscriptionService
+ * @summary
+ * Handles subscription lifecycle operations, plan resolution, and
+ * business rule enforcement for plan–payer compatibility.
+ * Key responsibilities:
+ * - Resolve plans using numeric or string-based plan IDs
+ * - Enforce plan-type vs payer-type compatibility rules
+ * - Create and manage subscription status, billing dates, and Stripe identifiers
+ * - Retrieve active, pending, or historical subscriptions
+ * Notes:
+ * - Frontend-controlled status is respected when creating subscriptions
+ * - Automatically sets start, end, and next billing dates if missing
+ */
+
+
 @Service
 public class SubscriptionService {
 
@@ -32,34 +48,25 @@ public class SubscriptionService {
      */
     @Transactional
     public Subscription createSubscriptionWithPlanId(Subscription subscription, String planIdString) {
-        // Try to resolve planId - it could be a numeric ID or a string identifier
+
         SubscriptionPlan plan = resolvePlan(planIdString);
-        
-        // Validate that plan type matches payer type
+
         validatePlanTypeMatchesPayerType(plan.getType(), subscription.getPayerType());
-        
-        // Set the resolved numeric plan ID and store the string plan ID
+
         subscription.setPlanId(plan.getId());
-        subscription.setPlanIdString(plan.getPlanId()); // Store the string plan ID (e.g., "patient_standard")
-        
-        // Set start date if not already set
+
+        subscription.setPlanIdString(plan.getPlanId());
+
         if (subscription.getStartDate() == null) {
             subscription.setStartDate(LocalDateTime.now());
         }
-        
-        // Set end date if not already set (default 1 month)
         if (subscription.getEndDate() == null) {
             subscription.setEndDate(subscription.getStartDate().plusMonths(1));
         }
-        
-        // Set next billing date if not already set
         if (subscription.getNextBillingDate() == null) {
             subscription.setNextBillingDate(subscription.getEndDate());
         }
-        
-        // IMPORTANT: Do NOT override status! The assembler sets it from the frontend request
-        // This allows the frontend to create subscriptions with status='active' after successful payment
-        // If status is still null for some reason, default to ACTIVE
+
         if (subscription.getStatus() == null) {
             subscription.setStatus(SubscriptionStatus.ACTIVE);
         }
@@ -77,7 +84,6 @@ public class SubscriptionService {
             return subscriptionPlanRepository.findById(numericId)
                     .orElseThrow(() -> new IllegalArgumentException("Plan not found with numeric id: " + numericId));
         } catch (NumberFormatException e) {
-            // Not a numeric ID, try to find by string plan ID
             return subscriptionPlanRepository.findByPlanId(planIdString)
                     .orElseThrow(() -> new IllegalArgumentException("Plan not found with plan id: " + planIdString));
         }
@@ -85,7 +91,6 @@ public class SubscriptionService {
 
     @Transactional
     public Subscription createSubscription(Subscription subscription) {
-        // This method expects planId to already be set as a numeric ID
         SubscriptionPlan plan = subscriptionPlanRepository.findById(subscription.getPlanId())
                 .orElseThrow(() -> new IllegalArgumentException("Plan not found with id: " + subscription.getPlanId()));
         
@@ -125,12 +130,10 @@ public class SubscriptionService {
 
     @Transactional(readOnly = true)
     public Optional<Subscription> getActiveSubscription(Long payerId, PayerType payerType) {
-        // First try to find an ACTIVE subscription
         Optional<Subscription> active = subscriptionRepository.findByPayerIdAndPayerTypeAndStatus(payerId, payerType, SubscriptionStatus.ACTIVE);
         if (active.isPresent()) {
             return active;
         }
-        // If no active subscription, look for PENDING (considered as active by frontend)
         return subscriptionRepository.findByPayerIdAndPayerTypeAndStatus(payerId, payerType, SubscriptionStatus.PENDING);
     }
 
