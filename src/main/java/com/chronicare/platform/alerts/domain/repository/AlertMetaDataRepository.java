@@ -8,6 +8,10 @@ import com.chronicare.platform.alerts.domain.model.AlertMetaData;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Summary: Repository interface for Alert Metadata
+ */
+
 public interface AlertMetaDataRepository {
 
     List<AlertMetaData> findAll();
