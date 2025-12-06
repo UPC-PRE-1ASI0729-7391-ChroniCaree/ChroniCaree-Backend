@@ -1,7 +1,7 @@
 package com.chronicare.platform.alerts.domain.model.commands;
 
 /**
- * Command to escalate an alert
+ * Summary: Command to escalate an alert
  */
 public record EscalateAlertCommand(
     Long alertId,
