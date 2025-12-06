@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Implementation of Alert Query Service
+ * Summary: Implementation of Alert Query Service
  */
 @Service
 @Transactional(readOnly = true)
