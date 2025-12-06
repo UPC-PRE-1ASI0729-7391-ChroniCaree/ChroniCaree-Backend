@@ -11,6 +11,25 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
+/**
+ * Implementation of the PatientCommandService.
+ *
+ * @summary
+ * Handles all command-side operations for Patient aggregates, enforcing domain rules
+ * and delegating persistence to the PatientRepository.
+ * Responsibilities:
+ * - Create a new patient while preventing duplicate DNI values.
+ * - Update existing patient data using domain-level update logic.
+ * - Delete patients safely after validating existence.
+ * - Assign or unassign a doctor to a patient.
+ * Business rules enforced:
+ * - No two patients can share the same DNI.
+ * - Patient must exist before being updated, deleted, or assigned/unassigned to a doctor.
+ *
+ * All methods run within transactional boundaries to ensure data consistency.
+ */
+
+
 @Service
 public class PatientCommandServiceImpl implements PatientCommandService {
     private final PatientRepository patientRepository;
