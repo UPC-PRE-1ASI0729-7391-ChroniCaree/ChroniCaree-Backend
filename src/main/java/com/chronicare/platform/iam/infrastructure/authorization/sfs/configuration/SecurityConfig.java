@@ -89,6 +89,9 @@ public class SecurityConfig {
                 // ENDPOINTS PÚBLICOS (sin autenticación)
                 // ════════════════════════════════════════════════════════════════
                 .requestMatchers(
+                    "/",
+                    "/actuator/health",
+                    "/actuator/health/**",
                     "/api/v1/authentication/**",
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
@@ -96,6 +99,8 @@ public class SecurityConfig {
                     "/swagger-resources/**",
                     "/webjars/**"
                 ).permitAll()
+                // Permitir preflight CORS sin autenticación
+                .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                 // Subscription Plans - PÚBLICO (necesario ver planes antes de registrarse)
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/subscriptionPlans/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/subscriptionPlans").permitAll()
