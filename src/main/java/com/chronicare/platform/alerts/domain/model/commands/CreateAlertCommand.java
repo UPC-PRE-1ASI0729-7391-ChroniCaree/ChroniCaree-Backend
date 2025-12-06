@@ -1,7 +1,7 @@
 package com.chronicare.platform.alerts.domain.model.commands;
 
 /**
- * Command to create a new alert
+ * Summary: Command to create a new alert
  */
 public record CreateAlertCommand(
     Long patientId,
