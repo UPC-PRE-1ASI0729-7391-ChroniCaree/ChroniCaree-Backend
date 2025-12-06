@@ -1,7 +1,7 @@
 package com.chronicare.platform.alerts.domain.model.queries;
 
 /**
- * Query to get alerts by tenant ID with optional filters
+ * Summary: Query to get alerts by tenant ID with optional filters
  */
 public record GetAlertsByTenantIdQuery(
     Long tenantId,
