@@ -4,6 +4,9 @@
  */
 package com.chronicare.platform.alerts.domain.model;
 
+/**
+ * Summary: Enumeration defining Alert severity levels
+ */
 
 public enum AlertSeverity {
     LOW,
