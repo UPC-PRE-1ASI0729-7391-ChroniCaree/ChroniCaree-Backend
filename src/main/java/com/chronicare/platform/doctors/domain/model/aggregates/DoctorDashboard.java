@@ -7,7 +7,7 @@ import com.chronicare.platform.doctors.domain.model.valueobjects.ScheduleEntry;
 import java.util.List;
 
 /**
- * Doctor Dashboard Aggregate Root
+ * Summary: Doctor Dashboard Aggregate Root
  * Encapsulates all doctor dashboard information
  */
 public class DoctorDashboard {

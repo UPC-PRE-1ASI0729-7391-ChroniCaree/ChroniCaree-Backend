@@ -10,7 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Doctor Dashboard Controller
+ * Summary: Doctor Dashboard Controller
  * Exposes endpoints for doctor dashboard data
  */
 @RestController

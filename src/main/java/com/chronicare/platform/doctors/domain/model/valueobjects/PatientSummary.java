@@ -3,7 +3,7 @@ package com.chronicare.platform.doctors.domain.model.valueobjects;
 import java.time.LocalDateTime;
 
 /**
- * Patient Summary Value Object
+ * Summary: Patient Summary Value Object
  * Represents a patient summary for doctor dashboard
  */
 public record PatientSummary(

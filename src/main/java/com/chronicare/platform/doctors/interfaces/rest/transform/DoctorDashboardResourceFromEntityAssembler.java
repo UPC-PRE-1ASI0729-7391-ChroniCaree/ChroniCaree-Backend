@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Doctor Dashboard Resource Assembler
+ * Summary: Doctor Dashboard Resource Assembler
  * Transforms DoctorDashboard entity to DoctorDashboardResource
  */
 public class DoctorDashboardResourceFromEntityAssembler {

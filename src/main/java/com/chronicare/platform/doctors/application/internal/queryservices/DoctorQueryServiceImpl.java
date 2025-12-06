@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Doctor Query Service Implementation
+ * Summary: Doctor Query Service Implementation
  */
 @Service
 public class DoctorQueryServiceImpl implements DoctorQueryService {
