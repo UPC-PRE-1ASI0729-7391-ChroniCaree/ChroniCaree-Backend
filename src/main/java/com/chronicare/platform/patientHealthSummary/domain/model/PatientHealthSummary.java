@@ -8,6 +8,22 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+/**
+ * PatientHealthSummary Entity
+ *
+ * @summary
+ * Represents the aggregated health summary of a patient within the system.
+ * This entity consolidates key clinical and administrative information:
+ * - Personal and identification data
+ * - Assigned medical staff
+ * - Current health status and alert indicators
+ * - Recent vital signs and visit history
+ * - Tenant and hospital context for multi-tenant environments
+ * Serves as a read-optimized model used across various clinical dashboards
+ * and patient monitoring features.
+ */
+
+
 @Entity
 @Table(name = "patient_health_summaries")
 public class PatientHealthSummary {
