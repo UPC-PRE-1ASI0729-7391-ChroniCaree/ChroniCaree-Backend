@@ -31,5 +31,15 @@ COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
 
-# JVM flags and dynamic PORT
-ENTRYPOINT ["sh", "-c", "java --enable-preview -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Dserver.port=${PORT:-8080} -jar app.jar"]
+# Optimized JVM flags for Railway (512MB plan)
+ENTRYPOINT ["sh", "-c", "java --enable-preview \
+    -Xms128m \
+    -Xmx384m \
+    -XX:+UseG1GC \
+    -XX:MaxGCPauseMillis=100 \
+    -XX:+UseStringDeduplication \
+    -XX:+OptimizeStringConcat \
+    -Djava.security.egd=file:/dev/./urandom \
+    -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:-prod} \
+    -Dserver.port=${PORT:-8080} \
+    -jar app.jar"]
