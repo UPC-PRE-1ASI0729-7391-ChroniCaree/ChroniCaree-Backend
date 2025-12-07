@@ -1,6 +1,7 @@
 package com.chronicare.platform.messages.interfaces.rest.resources;
 
 import com.chronicare.platform.messages.domain.model.valueobjects.SenderRole;
+import com.fasterxml.jackson.annotation.JsonAlias;
 
 /**
  * Resource for creating a new Message
@@ -10,7 +11,7 @@ public record CreateMessageResource(
         SenderRole senderRole,
         Long senderId,
         Long receiverId,
-        String body,
+        @JsonAlias({"body","content"}) String body,
         String subject,
         boolean isUrgent
 ) {

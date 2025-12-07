@@ -290,7 +290,15 @@ public class PatientController {
     @GetMapping("/{id}/health-summary")
     @Operation(summary = "Get patient health summary by patient ID", description = "Retrieve the health summary for a given patient ID")
     public ResponseEntity<PatientHealthSummary> getHealthSummaryForPatient(@PathVariable Long id) {
-        PatientHealthSummary summary = patientHealthSummaryService.getSummaryByUserId(id);
+        // Resolve patient by id, then use the patient's userId to fetch the health summary
+        var maybePatient = patientQueryService.handle(new GetPatientByIdQuery(id));
+        if (maybePatient.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        var patient = maybePatient.get();
+        Long userId = patient.getUserId();
+        PatientHealthSummary summary = patientHealthSummaryService.getSummaryByUserId(userId);
         if (summary == null) {
             return ResponseEntity.notFound().build();
         }
