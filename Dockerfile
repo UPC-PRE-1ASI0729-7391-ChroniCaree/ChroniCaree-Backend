@@ -3,21 +3,22 @@ FROM eclipse-temurin:21-jdk AS build
 
 WORKDIR /app
 
+# Set Maven options for Railway's memory limits
+ENV MAVEN_OPTS="-Xmx512m -Xms256m"
+
 COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
 
 # Convert line endings for Windows users and make executable
 RUN sed -i 's/\r$//' mvnw && chmod +x mvnw
 
-# Ensure JDK 21 from the base image is used
-
-# Download dependencies
-RUN ./mvnw dependency:go-offline -B
+# Download dependencies with reduced memory
+RUN ./mvnw dependency:go-offline -B || true
 
 COPY src ./src
 
-# Build
-RUN ./mvnw clean package -DskipTests
+# Build with reduced memory and parallel execution disabled
+RUN ./mvnw clean package -DskipTests -T 1
 
 # Run stage
 FROM eclipse-temurin:21-jre

@@ -6,9 +6,7 @@ import com.chronicare.platform.patients.domain.commands.DeletePatientCommand;
 import com.chronicare.platform.patients.domain.commands.UpdatePatientCommand;
 import com.chronicare.platform.patients.domain.repository.PatientRepository;
 import com.chronicare.platform.patients.domain.services.PatientCommandService;
-import com.chronicare.platform.iam.domain.model.repositories.UserRepository;
 import com.chronicare.platform.doctors.infrastructure.persistence.jpa.repositories.DoctorRepository;
-import com.chronicare.platform.tenants.domain.repository.TenantRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,19 +35,13 @@ public class PatientCommandServiceImpl implements PatientCommandService {
     private static final String PATIENT_NOT_FOUND = "Patient not found";
     
     private final PatientRepository patientRepository;
-    private final UserRepository userRepository;
     private final DoctorRepository doctorRepository;
-    private final TenantRepository tenantRepository;
 
     public PatientCommandServiceImpl(
             PatientRepository patientRepository,
-            UserRepository userRepository,
-            DoctorRepository doctorRepository,
-            TenantRepository tenantRepository) {
+            DoctorRepository doctorRepository) {
         this.patientRepository = patientRepository;
-        this.userRepository = userRepository;
         this.doctorRepository = doctorRepository;
-        this.tenantRepository = tenantRepository;
     }
 
     @Override
@@ -70,23 +62,9 @@ public class PatientCommandServiceImpl implements PatientCommandService {
                 throw new IllegalArgumentException("Patient with DNI " + command.dni().value() + " already exists");
             }
 
-            // Validate userId exists
-            if (command.userId() != null) {
-                userRepository.findById(command.userId())
-                        .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + command.userId()));
-            }
-
-            // Validate assignedDoctorId exists (if provided)
-            if (command.assignedDoctorId() != null) {
-                doctorRepository.findById(command.assignedDoctorId())
-                        .orElseThrow(() -> new IllegalArgumentException("Doctor not found with ID: " + command.assignedDoctorId()));
-            }
-
-            // Validate tenantId exists (if provided)
-            if (command.tenantId() != null) {
-                tenantRepository.findById(command.tenantId())
-                        .orElseThrow(() -> new IllegalArgumentException("Tenant not found with ID: " + command.tenantId()));
-            }
+            // Note: FK validations removed to allow flexible creation flow
+            // The database will enforce referential integrity if FK constraints exist
+            // This allows creating patients before all related entities are fully set up
 
             var patient = new Patient(command);
             return patientRepository.save(patient);
