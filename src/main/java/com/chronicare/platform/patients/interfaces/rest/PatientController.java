@@ -13,6 +13,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import com.chronicare.platform.patientHealthSummary.application.services.PatientHealthSummaryService;
+import com.chronicare.platform.patientHealthSummary.domain.model.PatientHealthSummary;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -41,15 +43,17 @@ public class PatientController {
 
     private final PatientCommandService patientCommandService;
     private final PatientQueryService patientQueryService;
+    private final PatientHealthSummaryService patientHealthSummaryService;
 
     /**
      * Constructor
      * @param patientCommandService The {@link PatientCommandService} instance
      * @param patientQueryService The {@link PatientQueryService} instance
      */
-    public PatientController(PatientCommandService patientCommandService, PatientQueryService patientQueryService) {
+    public PatientController(PatientCommandService patientCommandService, PatientQueryService patientQueryService, PatientHealthSummaryService patientHealthSummaryService) {
         this.patientCommandService = patientCommandService;
         this.patientQueryService = patientQueryService;
+        this.patientHealthSummaryService = patientHealthSummaryService;
     }
 
     /**
@@ -281,5 +285,15 @@ public class PatientController {
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping("/{id}/health-summary")
+    @Operation(summary = "Get patient health summary by patient ID", description = "Retrieve the health summary for a given patient ID")
+    public ResponseEntity<PatientHealthSummary> getHealthSummaryForPatient(@PathVariable Long id) {
+        PatientHealthSummary summary = patientHealthSummaryService.getSummaryByUserId(id);
+        if (summary == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(summary);
     }
 }

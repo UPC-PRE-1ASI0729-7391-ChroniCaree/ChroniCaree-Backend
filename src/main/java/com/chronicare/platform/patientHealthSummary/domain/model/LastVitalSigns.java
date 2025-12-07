@@ -4,10 +4,13 @@
  */
 package com.chronicare.platform.patientHealthSummary.domain.model;
 
+import jakarta.persistence.Embeddable;
+
 /**
  *
  * @author Barturen
  */
+@Embeddable
 public class LastVitalSigns {
 
     private Double glucose;
