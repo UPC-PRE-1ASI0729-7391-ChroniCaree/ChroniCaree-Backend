@@ -3,6 +3,7 @@ package com.chronicare.platform.iam.infrastructure.authorization.sfs.configurati
 import com.chronicare.platform.iam.infrastructure.authorization.sfs.pipeline.BearerTokenRequestFilter;
 import com.chronicare.platform.iam.infrastructure.authorization.sfs.pipeline.JwtAuthenticationEntryPoint;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,12 +22,16 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    @Value("${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://localhost:4201}")
+    private String corsAllowedOrigins;
 
     private final UserDetailsService userDetailsService;
     private final BearerTokenRequestFilter authorizationRequestFilter;
@@ -59,16 +64,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Permitir múltiples orígenes del frontend
-        configuration.setAllowedOrigins(List.of(
-            "http://localhost:4200",
-            "http://localhost:4201",
-            "http://127.0.0.1:4200",
-            "http://127.0.0.1:4201",
-            "https://chornicare-backend-production.up.railway.app",
-            "https://chornicare-backend-production.up.railway.app:8080",
-            "https://chronicaree-frontend.onrender.com"
-        ));
+        // Leer orígenes permitidos desde variable de entorno CORS_ALLOWED_ORIGINS
+        configuration.setAllowedOrigins(Arrays.asList(corsAllowedOrigins.split(",")));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
