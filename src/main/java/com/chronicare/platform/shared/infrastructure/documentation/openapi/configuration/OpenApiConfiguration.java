@@ -7,6 +7,7 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,6 +47,14 @@ public class OpenApiConfiguration {
                 .externalDocs(new ExternalDocumentation()
                         .description("ChroniCare Platform Documentation")
                         .url("https://chronicare-platform.docs.io"));
+
+        // Add servers configuration (HTTPS only for production)
+        openApi.addServersItem(new Server()
+                .url("https://chornicare-backend-production.up.railway.app")
+                .description("Production server (Railway)"));
+        openApi.addServersItem(new Server()
+                .url("http://localhost:8080")
+                .description("Local development server"));
 
         // Add security scheme
         final String securitySchemeName = "bearerAuth";
