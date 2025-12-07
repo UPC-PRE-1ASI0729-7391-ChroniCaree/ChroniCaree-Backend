@@ -66,6 +66,7 @@ public class SecurityConfig {
             "http://127.0.0.1:4200",
             "http://127.0.0.1:4201",
             "https://chornicare-backend-production.up.railway.app",
+            "https://chornicare-backend-production.up.railway.app:8080",
             "https://chronicaree-frontend.onrender.com"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
