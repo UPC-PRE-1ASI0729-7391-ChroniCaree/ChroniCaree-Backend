@@ -64,8 +64,15 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Leer orígenes permitidos desde variable de entorno CORS_ALLOWED_ORIGINS
-        configuration.setAllowedOrigins(Arrays.asList(corsAllowedOrigins.split(",")));
+        
+        // CORRECCIÓN JAVA 21:
+        // 1. split: separa por comas
+        // 2. trim: elimina espacios en blanco accidentales (ej: " http://...")
+        // 3. toList: crea la lista (Nativo en Java 16+)
+        configuration.setAllowedOrigins(Arrays.stream(corsAllowedOrigins.split(","))
+                .map(String::trim)
+                .toList());
+
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
